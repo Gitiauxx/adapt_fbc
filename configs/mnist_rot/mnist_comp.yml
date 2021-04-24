@@ -1,0 +1,50 @@
+experiment: "mnist_rot_comp"
+
+data:
+  train: '../Data/mnist-rot/training.pt'
+  validate: '../Data/mnist-rot/training.pt'
+  test: '../Data/mnist-rot/test.pt'
+  name: 'MNISTRot'
+  seed: 0
+  range_data: 10000
+  reshape: True
+
+batch_size: 128
+
+net:
+  name: 'FCGated'
+  zk: 8
+  k: 8
+  sdim: 3
+  depth: 2
+  width: 512
+  input_dim: 784
+  learning_rate: 0.0001
+  sigma: 0.5
+  activation_out: 'sigmoid'
+  ncode: 2
+
+pmodel:
+  name: 'PixelCNN'
+  learning_rate: 0.001
+  channels: 48
+  ncode: 2
+  depth: 2
+  nclass: 3
+  kernel: 5
+
+loss:
+  name: 'L2Loss'
+
+ploss:
+  name: 'CECondLoss'
+
+device: 'cpu'
+n_epochs: 100
+method: 'compression'
+nclass_outcome: 10
+gamma: 0.0
+nclass_sensitive: 3
+annealing_epochs: 0
+warmup_epochs: 5
+lr_min: 0.00001

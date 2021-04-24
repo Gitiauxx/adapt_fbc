@@ -1,0 +1,240 @@
+import torch
+import numpy as np
+
+from torch.nn.parallel.data_parallel import DataParallel
+
+from source.utils import get_logger
+from source.losses import *
+from source.autoencoders import *
+from source.auditors import *
+
+logger = get_logger(__name__)
+
+class _CustomDataParallel(DataParallel):
+    """
+    DataParallel distribute batches across multiple GPUs
+
+    https://github.com/pytorch/pytorch/issues/16885
+    """
+
+    def __init__(self, model):
+        super(_CustomDataParallel, self).__init__(model)
+
+    def __getattr__(self, name):
+        try:
+            return super(_CustomDataParallel, self).__getattr__(name)
+        except AttributeError:
+            return getattr(self.module, name)
+
+
+class Model(object):
+    """
+    pytorch model with loss and neural network autoencoder/fairness auditor
+    """
+
+    def __init__(self, net, loss, ploss, pmodel, learning_rate={'autoencoder': 0.001, 'lr_min': 0.0001, 'nepochs': 100},
+                 device='cpu', beta=0, gamma=0, method='compression', annealing_epochs=0, warmup_epochs=0):
+
+        device = torch.device(device)
+        self.net = net.to(device)
+
+        self.loss = loss
+
+        self.pmodel = pmodel.to(device)
+        self.ploss = ploss
+
+        self.learning_rate = learning_rate['autoencoder']
+        self.learning_rate_p = learning_rate['pmodel']
+
+        self.device = device
+        self.beta = beta
+        self.gamma = gamma
+        self.method = method
+        self.annealing_epochs = annealing_epochs
+        self.warmup_epochs = warmup_epochs
+
+        self.optimizer = torch.optim.Adam(list(self.net.parameters()), lr=self.learning_rate, betas=(0.5, 0.999),
+                                              weight_decay=1e-5)
+
+        self.optimizer_pmodel = torch.optim.Adam(list(self.pmodel.parameters()), lr=self.learning_rate_p,
+                                                betas=(0.5, 0.999), weight_decay=1e-5)
+
+        self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            self.optimizer, float(learning_rate['nepochs'] - warmup_epochs - 1), eta_min=learning_rate['lr_min'])
+
+    @classmethod
+    def from_dict(cls, config_dict):
+        """
+        Create a model input configuration from a config dictionary
+
+        Parameters
+        ----------
+        config_dict : configuration dictionary
+
+        """
+        name_net = config_dict['net'].pop('name')
+        beta = config_dict['beta']
+        gamma = config_dict['gamma']
+
+        method = config_dict['method']
+
+        annealing_epochs = 0
+        if 'annealing_epochs' in config_dict:
+            annealing_epochs = config_dict['annealing_epochs']
+
+        warmup_epochs = 0
+        if 'warmup_epochs' in config_dict:
+            warmup_epochs = config_dict['warmup_epochs']
+
+        learning_rate = config_dict['net'].pop('learning_rate')
+        lr = {'autoencoder': learning_rate, 'lr_min': config_dict['lr_min'],
+              'nepochs': config_dict['n_epochs']}
+
+        learning_rate_p = config_dict['pmodel'].pop('learning_rate')
+        lr['pmodel'] = learning_rate_p
+
+        net = globals()[name_net].from_dict(config_dict['net'])
+
+        if torch.cuda.device_count() > 1:
+            logger.info(f'Number of gpu is {torch.cuda.device_count()}')
+            net = _CustomDataParallel(net)
+
+        name_loss = config_dict['loss'].pop('name')
+        device = config_dict['device']
+
+        loss = globals()[name_loss].from_dict(config_dict['loss'])
+
+        name_ploss = config_dict['ploss'].pop('name')
+        name_pmodel = config_dict['pmodel'].pop('name')
+        ploss = globals()[name_ploss].from_dict(config_dict['ploss'])
+        pmodel = globals()[name_pmodel].from_dict(config_dict['pmodel'])
+
+        model = cls(net, loss, ploss, pmodel, learning_rate=lr,
+                    device=device, beta=beta, gamma=gamma, method=method,
+                    annealing_epochs=annealing_epochs, warmup_epochs=warmup_epochs)
+
+        return model
+
+    def optimize_parameters(self, x, y, s, autoencoder=True):
+
+        """
+        Optimization of both autoencoder
+        :param x: input
+        :param target:
+        :param sensitive:
+        :return:
+        """
+        self.optimizer.zero_grad()
+        self.optimizer_pmodel.zero_grad()
+
+        output, q = self.net.forward(x, s)
+
+        if autoencoder:
+
+            logits = self.pmodel.forward(q)
+
+            loss = self.loss.forward(y, output)
+
+            ploss = self.ploss.forward(q, logits)
+            loss = loss + self.beta * self.gamma * ploss.sum(dim=[1, 2]).mean(0)
+
+            loss.backward()
+            self.optimizer.step()
+
+        q = q.detach()
+        logits = self.pmodel.forward(q)
+        ploss = self.ploss.forward(q, logits)
+        ploss_mean = ploss.sum(dim=[1, 2]).mean(0)
+
+        ploss_mean.backward()
+        self.optimizer_pmodel.step()
+
+        return loss
+
+    def train(self, train_loader, validation_loader, n_epochs, writer,
+              chkpt_dir=None, save=True):
+
+        if save:
+            assert chkpt_dir is not None
+
+        for epoch in range(n_epochs):
+
+            train_loss = 0
+
+            for batch_idx, batch in enumerate(train_loader):
+
+                if epoch > self.warmup_epochs:
+                    self.scheduler.step()
+
+                if epoch < self.annealing_epochs:
+                    annealing_factor = (float(batch_idx + epoch * len(train_loader)) /
+                                        float(self.annealing_epochs * len(train_loader)))
+                else:
+                    annealing_factor = 1.0
+
+                self.gamma = annealing_factor
+
+                input = batch['input'].to(self.device)
+                target = batch['target'].to(self.device)
+                sensitive = batch['sensitive'].to(self.device)
+
+                loss = self.optimize_parameters(input, target, sensitive)
+                train_loss += loss.detach().cpu() * len(input) / len(train_loader.dataset)
+
+            writer['training']['rec_loss'][epoch] = train_loss.item()
+
+            logger.info(f'Epoch: {epoch} Train loss: {train_loss}')
+
+            if ((epoch % 5 == 0) | (epoch == n_epochs - 1)):
+                val_loss, accuracy, s_loss, entr_loss = self.eval(validation_loader)
+                logger.info(f'Epoch: {epoch} Validation loss: {val_loss}')
+                logger.info(f'Epoch: {epoch} Accuracy of Entropy Model: {accuracy}')
+                logger.info(f'Epoch: {epoch} Entropy Model: {entr_loss}')
+                logger.info(f'Epoch: {epoch} Differences of Q by S: {s_loss}')
+
+
+            if (save) & ((epoch % 10 == 0) | (epoch == n_epochs - 1)):
+                model_dict = {'epoch': epoch,
+                              'loss': self.loss,
+                              'model_state_dict': self.net.state_dict(),
+                              'optimizer_state_dict': self.optimizer.state_dict()}
+
+                torch.save(model_dict, f'{chkpt_dir}/epoch_{epoch}')
+
+    def eval(self, data_loader, eps=10**(-8)):
+        """
+        Measure reconstruction loss for self.net and loss for self.auditor
+        :param data_loader: torch.DataLoader
+        :return: reconstruction loss, auditor accuracy
+        """
+        rec_loss = 0
+        accuracy = 0
+        s_loss = 0
+        entr_loss = 0
+
+        self.net.eval()
+
+        for _, batch in enumerate(data_loader):
+            x = batch['input'].to(self.device)
+            s = batch['sensitive'].to(self.device)
+            y = batch['target'].to(self.device)
+
+            out, q = self.net.forward(x, s)
+
+            loss = self.loss.forward(y, out)
+            rec_loss += loss.cpu().detach() * len(x) / len(data_loader.dataset)
+
+            logits = self.pmodel.forward(q)
+            pred = logits.argmax(1)
+            acc = (pred == q).float().mean()
+            accuracy += acc.cpu().detach() * len(x) / len(data_loader.dataset)
+
+            bs = q[:, None, ...]
+            se = s[:, :, None, None]
+            b_loss = torch.abs((bs * se).sum(0) / se.sum(0) - q[:, None, ...].mean(0)).sum(dim=[1, 2, 0])
+            s_loss += b_loss.cpu().detach() * len(x) / len(data_loader.dataset)
+
+            ploss = self.ploss.forward(q, logits)
+            entr_loss += ploss.sum(dim=[1, 2]).mean().cpu().detach() * len(x) / len(data_loader.dataset)
+
+        return rec_loss, accuracy, s_loss, entr_loss

@@ -1,0 +1,21 @@
+autoencoder: 'configs/mnist_rot/mnist_comp.yml'
+
+probes_list:
+  - 'configs/probes/multi_width_256_depth_4.yml'
+
+task_list:
+  - 'configs/probes/multi_width_256_depth_4.yml'
+
+decode: False
+
+experiment_type: 'predict_outcome_sensitive'
+
+seed: 0
+
+name: 'mnist_rot_comp_all'
+
+noisy: False
+
+logging_dir: './Summaries/test'
+
+checkpoints: './checkpoints'
