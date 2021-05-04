@@ -19,7 +19,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int)
     parser.add_argument('--beta', type=float)
     parser.add_argument('--fairness', type=float)
-    parser.add_argument('--tmax', type=int)
+    parser.add_argument('--tmax', type=float)
     parser.add_argument('--random_order', type=bool)
 
     args = parser.parse_args()
@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
     rind = np.random.randint(0, 10**5)
 
-    outfolder = f'{logging_dir}/summaries/probes/{experiment_type}/{name}'
+    outfolder = f'{logging_dir}/summaries/{experiment_type}/{name}'
     os.makedirs(outfolder, exist_ok=True)
     outfile = f'{outfolder}/{tstamp}_{experiment_type}_{seed}_{rind}.json'
 
@@ -60,4 +60,24 @@ if __name__ == '__main__':
                beta=beta, decode=config_dict['decode'],
                seed=seed, fairness=fairness, checkpoints=checkpoint_dir,
                task_list=config_dict['task_list'])
+
+    threshold_range = np.linspace(0, args.tmax, 10, dtype=float)
+    for t in threshold_range:
+
+        PR.threshold = t
+
+        PR.train_rep_loader = PR.generate_representation(PR.train_dset, shuffle=True)
+        PR.test_rep_loader = PR.generate_representation(PR.test_dset, shuffle=True)
+        PR.validate_rep_loader = PR.generate_representation(PR.validate_dset, shuffle=True)
+
+        PR.probe_sensitive()
+        PR.classify_from_representation()
+
+    writer = PR.results
+    json_results = json.dumps(writer)
+
+    f = open(outfile, "w")
+    f.write(json_results)
+    f.close()
+    logger.info(f'Save results and parameters in {outfile}')
 

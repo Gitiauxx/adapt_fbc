@@ -2,65 +2,64 @@ import torch
 import torch.nn as nn
 
 from source.template_model import TemplateModel
-from source.model_utils import activations, _to_one_hot, CondFC
+from source.model_utils import activations, _to_one_hot, ResNetBasicBlock, ResNetDecCondBlock, CondFC
 
-class FCGated(TemplateModel):
+class CNNGated(TemplateModel):
     """
     Implement a fully connected encoder and decoder with a quantization laayer and attention
     gates to identify bits that are predictive of the sensitive attribute
     """
 
-    def __init__(self, input_dim, depth=2, width=64, zk=8, k=8, sdim=2, activation_out=None, sigma=1, ncode=2):
+    def __init__(self, ichan=[1, 64, 128, 256, 256], kernel=3, embed_dim=4,
+                 zk=8, k=8, sdim=2, cout=None, sigma=1, ncode=2):
 
         super().__init__()
 
-        encoder_list = []
-        in_dim = input_dim
-        out_dim = width
-        for _ in range(depth - 1):
-            encoder = nn.Sequential(nn.Linear(in_dim, out_dim),
-                                    nn.BatchNorm1d(out_dim),
-                                    nn.ELU())
-            encoder_list.append(encoder)
+        padding = kernel // 2
+        self.embed_dim = embed_dim
 
-            in_dim = out_dim
+        preconv = [nn.Conv2d(ichan[0], ichan[1], kernel_size=kernel, stride=1, padding=padding)]
+        for i in range(1, len(ichan) - 1):
+            preconv.append(ResNetBasicBlock(ichan[i], ichan[i + 1], downsampling=2))
 
-        encoder_list.append(nn.Sequential(nn.Linear(out_dim, zk * k),
-                                          nn.BatchNorm1d( zk * k),
-                                          nn.Tanh()))
-        self.encoder = nn.Sequential(*encoder_list)
+        self.preconv = nn.Sequential(*preconv)
 
-        decoder_list = []
-        in_dim = zk * k
-        out_dim = width
-        for _ in range(depth - 1):
-            decoder = nn.Sequential(CondFC(in_dim, out_dim, sdim + 1))
-            decoder_list.append(decoder)
-            in_dim = out_dim
+        # self.preconv = nn.Sequential(nn.Conv2d(ichan[0], ichan[1], kernel_size=kernel, stride=1, padding=padding),
+        #                              ResNetBasicBlock(ichan[1], ichan[2], downsampling=2),
+        #                              ResNetBasicBlock(ichan[2], ichan[3], downsampling=2),
+        #                              ResNetBasicBlock(ichan[3], ichan[3], downsampling=2))
 
-        self.decoder = nn.Sequential(*decoder_list)
-
-        if activation_out is not None:
-            self.decoder_final = CondFC(in_dim, input_dim, sdim + 1, activation=activation_out)
-        else:
-            self.decoder_final = nn.Linear(in_dim, input_dim)
+        self.encoder = nn.Sequential(nn.Linear(ichan[3] * embed_dim ** 2, zk * k),
+                                    nn.BatchNorm1d(zk * k),
+                                    nn.Tanh())
 
         self.gate = nn.Sequential(CondFC(zk * k, 1, 1, activation='sigmoid'))
-        # self.gate_beta = nn.Sequential(nn.Linear(1, zk * k),
-        #                                nn.Tanh())
 
-        # self.encode_beta = nn.Sequential(nn.Linear(1, zk * k),
-        #                                nn.Tanh())
-        #
-        # self.decode_beta = nn.Sequential(nn.Linear(1, zk * k * 2),
-        #                                  nn.Tanh())
+        self.decoder = CondFC(zk * k, ichan[3] * embed_dim ** 2, sdim + 1)
+
+        postconv = []
+        for i in reversed(range(2, len(ichan))):
+            postconv.append(ResNetDecCondBlock(ichan[i], ichan[i - 1], sdim + 1, upsampling=2))
+
+        self.postconv = nn.Sequential(*postconv)
+
+        # self.postconv = nn.Sequential(ResNetDecCondBlock(ichan[3], ichan[3], sdim + 1, upsampling=2),
+        #                               ResNetDecCondBlock(ichan[3], ichan[2], sdim + 1, upsampling=2),
+        #                               ResNetDecCondBlock(ichan[2], ichan[1], sdim + 1, upsampling=2)
+        #                               )
+
+        if cout is not None:
+            self.image = nn.Conv2d(ichan[1], cout, kernel_size=3, stride=1, padding=1)
+        else:
+            self.image = nn.Conv2d(ichan[1], ichan[0], kernel_size=3, stride=1, padding=1)
+
+
 
         self.k = k
         self.zk = zk
         self.sigma = sigma
+        self.embed_dim = embed_dim
         self.code = nn.Parameter(torch.arange(ncode, dtype=float, requires_grad=True).float() / (ncode - 1))
-        self.scale = nn.Parameter(torch.tensor([10.0], requires_grad=True)).float()
-        self.scale_decode = nn.Parameter(torch.tensor([100.0], requires_grad=True)).float()
         self.param_init()
 
     def param_init(self):
@@ -83,7 +82,9 @@ class FCGated(TemplateModel):
         :param x:
         :return:
         """
-        return self.encoder(x)
+        h = self.preconv(x)
+        h = h.reshape(x.shape[0], -1)
+        return self.encoder(h)
 
     def decode(self, b, beta):
         """
@@ -92,9 +93,10 @@ class FCGated(TemplateModel):
         :return:
         """
         out, beta = self.decoder((b, beta))
-        out, _ = self.decoder_final((out, beta))
+        out = out.reshape(out.shape[0], -1, self.embed_dim, self.embed_dim)
+        out, beta = self.postconv((out, beta))
 
-        return out
+        return self.image(out)
 
     def quantize(self, z):
         """
@@ -130,20 +132,14 @@ class FCGated(TemplateModel):
         :param z:
         :return: mask_soft
         """
-        beta = beta.unsqueeze(1)
-        # z = z * (1 + self.gate_beta(beta))
-        #
-        # z_with_beta = torch.cat([z, beta], 1)
         gate, beta = self.gate((z, beta))
-        gate = self.k * self.zk * ( 1 - gate * beta)
+        gate = self.k * self.zk * (1 - gate * beta)
 
         mask_range = torch.arange(0, self.zk * self.k, device=z.device)
         mask_range = mask_range.unsqueeze(0).expand_as(z)
 
         mask = gate - mask_range
         mask = torch.sigmoid(mask)
-
-        #gate = 1 - beta * gate
 
         mask_hard = torch.round(mask)
         mask_soft = (mask_hard - mask).detach() + mask
@@ -155,15 +151,9 @@ class FCGated(TemplateModel):
         z = self.encode(x)
         b = beta.unsqueeze(1)
 
-        mask = self.compute_gate(z, beta)
+        mask = self.compute_gate(z, b)
 
         q, centers, code = self.quantize(z * mask)
-
-        # adjustment = self.decode_beta(b)
-        # scale, bias = torch.chunk(adjustment, 2, dim=1)
-        # qb = scale * q + bias
-        #qb = torch.cat([q, b], 1)
-        #srand = s[torch.randperm(s.shape[0])]
 
         b_with_s = torch.cat([b, s], -1)
         out = self.decode(q, b_with_s)

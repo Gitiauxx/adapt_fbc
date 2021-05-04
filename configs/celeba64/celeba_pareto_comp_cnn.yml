@@ -1,4 +1,4 @@
-autoencoder: 'configs/mnist_rot/mnist_comp.yml'
+autoencoder: 'configs/mnist_rot/celeba_comp_cnn.yml'
 
 probes_list:
   - 'configs/probes/multi_width_256_depth_4.yml'
@@ -12,10 +12,10 @@ experiment_type: 'predict_outcome_sensitive'
 
 seed: 0
 
-name: 'mnist_rot_comp_all5'
+name: 'celeba_comp_test'
 
 noisy: False
 
-logging_dir: './'
+logging_dir: '/scratch/xgitiaux/fals'
 
-checkpoints: './checkpoints'
+checkpoints: '/scratch/xgitiaux/fals/checkpoints'

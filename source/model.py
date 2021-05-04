@@ -127,23 +127,32 @@ class Model(object):
         self.optimizer.zero_grad()
         self.optimizer_pmodel.zero_grad()
 
-        output, q = self.net.forward(x, s)
+        beta = self.beta * torch.rand_like(s[:, 0])
+        output, q, mask, centers, code = self.net.forward(x, s, beta)
+
+        logits = self.pmodel.forward(q)
+
+        loss = self.loss.forward(y, output)
+
+        ploss = self.ploss.forward(centers, logits)
+        ploss = ploss.reshape(x.shape[0], -1) * mask
+
+        # m = torch.arange(ploss.shape[1]).unsqueeze(0).reshape(-1, q.shape[1], q.shape[2])
+        bs = centers[:, None, ...]
+        se = s[:, :, None, None] + 10**-8
+        b_loss = torch.abs((bs * se).sum(0) / se.sum(0) - bs.mean(0)).sum(dim=[1, 2, 0])
+
+        mask_loss = - (1 - mask).sum(1) * (beta).float()
+        loss = loss + self.gamma * (beta * ploss.sum(dim=[1])).mean(0)
 
         if autoencoder:
-
-            logits = self.pmodel.forward(q)
-
-            loss = self.loss.forward(y, output)
-
-            ploss = self.ploss.forward(q, logits)
-            loss = loss + self.beta * self.gamma * ploss.sum(dim=[1, 2]).mean(0)
-
             loss.backward()
             self.optimizer.step()
 
         q = q.detach()
+        centers = centers.detach()
         logits = self.pmodel.forward(q)
-        ploss = self.ploss.forward(q, logits)
+        ploss = self.ploss.forward(centers, logits)
         ploss_mean = ploss.sum(dim=[1, 2]).mean(0)
 
         ploss_mean.backward()
@@ -169,8 +178,11 @@ class Model(object):
                 if epoch < self.annealing_epochs:
                     annealing_factor = (float(batch_idx + epoch * len(train_loader)) /
                                         float(self.annealing_epochs * len(train_loader)))
+
                 else:
                     annealing_factor = 1.0
+
+                autoencoder = True
 
                 self.gamma = annealing_factor
 
@@ -178,7 +190,7 @@ class Model(object):
                 target = batch['target'].to(self.device)
                 sensitive = batch['sensitive'].to(self.device)
 
-                loss = self.optimize_parameters(input, target, sensitive)
+                loss = self.optimize_parameters(input, target, sensitive, autoencoder=autoencoder)
                 train_loss += loss.detach().cpu() * len(input) / len(train_loader.dataset)
 
             writer['training']['rec_loss'][epoch] = train_loss.item()
@@ -186,11 +198,13 @@ class Model(object):
             logger.info(f'Epoch: {epoch} Train loss: {train_loss}')
 
             if ((epoch % 5 == 0) | (epoch == n_epochs - 1)):
-                val_loss, accuracy, s_loss, entr_loss = self.eval(validation_loader)
-                logger.info(f'Epoch: {epoch} Validation loss: {val_loss}')
-                logger.info(f'Epoch: {epoch} Accuracy of Entropy Model: {accuracy}')
-                logger.info(f'Epoch: {epoch} Entropy Model: {entr_loss}')
-                logger.info(f'Epoch: {epoch} Differences of Q by S: {s_loss}')
+                for beta in [0.0, self.beta * self.gamma / 2 , self.beta * self.gamma]:
+                    val_loss, accuracy, s_loss, entr_loss, active_bits = self.eval(validation_loader, beta)
+                    logger.info(f'Epoch: {epoch} Beta {beta}: Validation loss: {val_loss}')
+                    logger.info(f'Epoch: {epoch} Beta {beta}: Accuracy of Entropy Model: {accuracy}')
+                    logger.info(f'Epoch: {epoch} Beta {beta}: Entropy Model: {entr_loss}')
+                    logger.info(f'Epoch: {epoch} Beta {beta}: Differences of Q by S: {s_loss}')
+                    logger.info(f'Epoch: {epoch} Beta {beta}: Average Number of active bits: {active_bits}')
 
 
             if (save) & ((epoch % 10 == 0) | (epoch == n_epochs - 1)):
@@ -201,7 +215,17 @@ class Model(object):
 
                 torch.save(model_dict, f'{chkpt_dir}/epoch_{epoch}')
 
-    def eval(self, data_loader, eps=10**(-8)):
+                pmodel_dict = {'epoch': epoch,
+                               'loss': self.loss,
+                               'model_state_dict': self.pmodel.state_dict(),
+                               'optimizer_state_dict': self.optimizer_pmodel.state_dict()}
+
+                torch.save(pmodel_dict, f'{chkpt_dir}/pmodel_epoch_{epoch}')
+
+                code = self.net.code.detach().cpu().numpy()
+                np.save(f'{chkpt_dir}/code_epoch_{epoch}.npy', code)
+
+    def eval(self, data_loader, beta):
         """
         Measure reconstruction loss for self.net and loss for self.auditor
         :param data_loader: torch.DataLoader
@@ -211,30 +235,37 @@ class Model(object):
         accuracy = 0
         s_loss = 0
         entr_loss = 0
+        active_bits = 0
 
         self.net.eval()
+
+        beta = torch.tensor([beta])
 
         for _, batch in enumerate(data_loader):
             x = batch['input'].to(self.device)
             s = batch['sensitive'].to(self.device)
             y = batch['target'].to(self.device)
 
-            out, q = self.net.forward(x, s)
+            b = beta.expand_as(s[:, 0])
+            out, q, mask, centers, _ = self.net.forward(x, s, b)
 
             loss = self.loss.forward(y, out)
             rec_loss += loss.cpu().detach() * len(x) / len(data_loader.dataset)
 
             logits = self.pmodel.forward(q)
             pred = logits.argmax(1)
-            acc = (pred == q).float().mean()
+            acc = (pred == centers).float().mean()
             accuracy += acc.cpu().detach() * len(x) / len(data_loader.dataset)
 
-            bs = q[:, None, ...]
+            bs = centers[:, None, ...]
             se = s[:, :, None, None]
-            b_loss = torch.abs((bs * se).sum(0) / se.sum(0) - q[:, None, ...].mean(0)).sum(dim=[1, 2, 0])
+            b_loss = torch.abs((bs * se).sum(0) / se.sum(0) - centers[:, None, ...].mean(0)).sum(dim=[1, 2, 0])
             s_loss += b_loss.cpu().detach() * len(x) / len(data_loader.dataset)
 
-            ploss = self.ploss.forward(q, logits)
+            ploss = self.ploss.forward(centers, logits)
             entr_loss += ploss.sum(dim=[1, 2]).mean().cpu().detach() * len(x) / len(data_loader.dataset)
 
-        return rec_loss, accuracy, s_loss, entr_loss
+            act = mask.sum(1).mean(0)
+            active_bits += act.cpu().detach() * len(x) / len(data_loader.dataset)
+
+        return rec_loss, accuracy, s_loss, entr_loss, active_bits

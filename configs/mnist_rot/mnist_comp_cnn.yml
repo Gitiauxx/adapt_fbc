@@ -4,24 +4,26 @@ data:
   train: '../Data/mnist-rot/training.pt'
   validate: '../Data/mnist-rot/training.pt'
   test: '../Data/mnist-rot/test.pt'
-  name: 'MNISTRot'
+  name: 'BinarizedMNISTRot'
   seed: 0
   range_data: 10000
-  reshape: True
+  reshape: False
 
 batch_size: 128
 
 net:
-  name: 'FCGated'
+  name: 'CNNGated'
   zk: 4
   k: 8
   sdim: 5
-  depth: 2
-  width: 512
-  input_dim: 784
+  ichan:
+    - 1
+    - 32
+    - 64
+    - 128
+    - 128
   learning_rate: 0.001
   sigma: 0.5
-  activation_out: 'sigmoid'
   ncode: 3
 
 pmodel:
@@ -34,20 +36,20 @@ pmodel:
   kernel: 5
 
 loss:
-  name: 'L2Loss'
+  name: 'BernouilliLoss'
 
 ploss:
   name: 'CECondLoss'
 
 device: 'cpu'
-n_epochs: 0
+n_epochs: 400
 method: 'compression'
 nclass_outcome: 10
 gamma: 0.0
 nclass_sensitive: 5
-annealing_epochs: 100
+annealing_epochs: 200
 warmup_epochs: 10
 lr_min: 0.00001
 
-run: 'checkpoints/mnist_rot_comp_all5/epoch_170'
-prun: 'checkpoints/mnist_rot_comp_all5/pmodel_epoch_170'
+#run: 'checkpoints/mnist_rot_comp_cnn_test/epoch_19'
+#prun: 'checkpoints/mnist_rot_comp_cnn_test/pmodel_epoch_19'

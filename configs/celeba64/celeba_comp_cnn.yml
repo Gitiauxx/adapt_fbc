@@ -1,0 +1,56 @@
+experiment: "celeba64_comp"
+
+data:
+  train: '../data/to-ml-celeba/train'
+  validate: '../data/to-ml-celeba/test'
+  test: '../data/to-ml-celeba/test'
+  name: 'CelebA64'
+  seed: 0
+  range_data: 10000
+
+batch_size: 128
+
+net:
+  name: 'CNNGated'
+  zk: 8
+  k: 8
+  sdim: 5
+  ichan:
+    - 1
+    - 32
+    - 64
+    - 128
+    - 128
+    - 128
+  learning_rate: 0.001
+  sigma: 0.5
+  ncode: 3
+  cout: 21
+
+pmodel:
+  name: 'PixelCNN'
+  learning_rate: 0.001
+  channels: 48
+  ncode: 3
+  depth: 2
+  nclass: 5
+  kernel: 5
+
+loss:
+  name: 'DiscMixLogisticLoss'
+
+ploss:
+  name: 'CECondLoss'
+
+device: 'cuda'
+n_epochs: 400
+method: 'compression'
+nclass_outcome: 10
+gamma: 0.0
+nclass_sensitive: 5
+annealing_epochs: 200
+warmup_epochs: 10
+lr_min: 0.00001
+
+#run: 'checkpoints/mnist_rot_comp_cnn_test/epoch_19'
+#prun: 'checkpoints/mnist_rot_comp_cnn_test/pmodel_epoch_19'
