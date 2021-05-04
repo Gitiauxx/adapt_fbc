@@ -18,4 +18,4 @@ module load cuda/10.2
 source ../fvae-env/bin/activate
 
 echo $SLURM_ARRAY_TASK_ID
-../fvae-env/bin/python3 eval.py --config_path configs/mnist/mnist_pareto_comp_cnn.yml --seed 0 --beta 1.0 --tmax 1.0
+../fvae-env/bin/python3 eval.py --config_path configs/mnist_rot/mnist_rot_pareto_comp_cnn.yml --seed 0 --beta 1.0 --tmax 1.0
