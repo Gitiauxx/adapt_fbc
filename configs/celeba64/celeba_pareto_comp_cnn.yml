@@ -1,4 +1,4 @@
-autoencoder: 'configs/mnist_rot/celeba_comp_cnn.yml'
+autoencoder: 'configs/celeba64/celeba_comp_cnn.yml'
 
 probes_list:
   - 'configs/probes/multi_width_256_depth_4.yml'
