@@ -16,6 +16,6 @@ name: 'mnist_rot_comp_cnn_test'
 
 noisy: False
 
-logging_dir: './'
+logging_dir: '/scratch/xgitiaux/afbc'
 
-checkpoints: './checkpoints'
+checkpoints: '/scratch/xgitiaux/afbc/checkpoints'
