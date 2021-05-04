@@ -20,7 +20,8 @@ class DiscMixLogisticLoss(TemplateLoss):
         :param target: initial input (B, C, W, H)
         :return: mean squared loss
         """
-        dist = DiscMixLogistic(output)
+        num_mix = int(output.shape[1] / 7)
+        dist = DiscMixLogistic(output, num_mix=num_mix)
         rec_loss = - dist.log_prob(target)
         rec_loss = torch.mean(rec_loss.sum(dim=[1, 2, 3]))
 
