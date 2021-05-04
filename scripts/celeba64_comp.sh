@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #SBATCH --job-name=celeba64_comp
-#SBATCH --output=/scratch/xgitiaux/celeba64_comp_%j_%a.out
-#SBATCH --error=/scratch/xgitiaux/celeba64_comp_%j_%a.error
+#SBATCH --output=/scratch/xgitiaux/celeba64_comp_%j.out
+#SBATCH --error=/scratch/xgitiaux/celeba64_comp_%j.error
 #SBATCH --mail-user=xgitiaux@gmu.edu
 #SBATCH --mail-type=END
 #SBATCH --export=ALL
