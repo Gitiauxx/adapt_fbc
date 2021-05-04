@@ -106,7 +106,7 @@ class CNNGated(TemplateModel):
         """
         z = (z + 1) / 2
         code = self.code.detach()
-        code_idx = torch.arange(self.code.shape[0])
+        code_idx = torch.arange(self.code.shape[0], device=code.device)
         code = code[None, None, :]
         z_code = (z.unsqueeze(-1) - code) ** 2
 
