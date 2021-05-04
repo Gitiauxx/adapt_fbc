@@ -8,7 +8,7 @@ data:
   seed: 0
   range_data: 10000
 
-batch_size: 128
+batch_size: 512
 
 net:
   name: 'CNNGated'
