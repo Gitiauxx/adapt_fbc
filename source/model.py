@@ -246,7 +246,7 @@ class Model(object):
             s = batch['sensitive'].to(self.device)
             y = batch['target'].to(self.device)
 
-            b = beta.expand_as(s[:, 0])
+            b = beta.expand_as(s[:, 0]).to(self.device)
             out, q, mask, centers, _ = self.net.forward(x, s, b)
 
             loss = self.loss.forward(y, out)
