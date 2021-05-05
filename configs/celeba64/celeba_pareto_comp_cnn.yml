@@ -16,6 +16,6 @@ name: 'celeba_comp_test'
 
 noisy: False
 
-logging_dir: '/scratch/xgitiaux/fals'
+logging_dir: '/scratch/xgitiaux/afbc'
 
-checkpoints: '/scratch/xgitiaux/fals/checkpoints'
+checkpoints: '/scratch/xgitiaux/afbc/checkpoints'

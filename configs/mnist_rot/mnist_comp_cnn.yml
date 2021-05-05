@@ -47,9 +47,9 @@ method: 'compression'
 nclass_outcome: 10
 gamma: 0.0
 nclass_sensitive: 5
-annealing_epochs: 200
+annealing_epochs: 100
 warmup_epochs: 10
 lr_min: 0.00001
 
-#run: 'checkpoints/mnist_rot_comp_cnn_test/epoch_19'
-#prun: 'checkpoints/mnist_rot_comp_cnn_test/pmodel_epoch_19'
+#run: 'checkpoints/mnist_rot_comp_cnn_test/epoch_399'
+#prun: 'checkpoints/mnist_rot_comp_cnn_test/pmodel_epoch_399'
