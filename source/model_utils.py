@@ -113,7 +113,7 @@ class ResNetResidualBlock(ResidualBlock):
         super().__init__(in_channels, out_channels, *args, **kwargs)
 
         self.expansion, self.kernel = expansion, kernel
-        self.downsampling = 2 * (self.should_apply_shortcut).astype('int32')
+        self.downsampling = 2 * (self.should_apply_shortcut == True)
 
         if self.should_apply_shortcut:
             self.shortcut = nn.Conv2d(self.in_channels, self.expanded_channels, kernel_size=1, stride=self.downsampling, bias=True)
