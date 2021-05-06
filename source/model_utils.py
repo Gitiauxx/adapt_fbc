@@ -109,10 +109,11 @@ class ResidualBlock(nn.Module):
 
 
 class ResNetResidualBlock(ResidualBlock):
-    def __init__(self, in_channels, out_channels, expansion=1, downsampling=1, kernel=3, *args, **kwargs):
+    def __init__(self, in_channels, out_channels, expansion=1, kernel=3, *args, **kwargs):
         super().__init__(in_channels, out_channels, *args, **kwargs)
 
-        self.expansion, self.downsampling, self.kernel = expansion, downsampling, kernel
+        self.expansion, self.kernel = expansion, kernel
+        self.downsampling = 2 * (self.should_apply_shortcut).astype('int32')
 
         if self.should_apply_shortcut:
             self.shortcut = nn.Conv2d(self.in_channels, self.expanded_channels, kernel_size=1, stride=self.downsampling, bias=True)
@@ -123,27 +124,19 @@ class ResNetResidualBlock(ResidualBlock):
     def expanded_channels(self):
         return self.out_channels * self.expansion
 
-    @property
-    def should_apply_shortcut(self):
-        return (self.in_channels != self.expanded_channels) | (self.downsampling == 2)
-
 
 class ResNetDecBlock(ResidualBlock):
-    def __init__(self, in_channels, out_channels, upsampling=1, kernel_size=3, *args, **kwargs):
+    def __init__(self, in_channels, out_channels, kernel_size=3, *args, **kwargs):
         super().__init__(in_channels, out_channels, *args, **kwargs)
 
-        self.upsampling, self.kernel = upsampling, kernel_size
+        self.kernel = kernel_size
 
         if self.should_apply_shortcut:
-            if self.upsampling == 2:
-                self.shortcut = nn.Sequential(UpSample(), nn.Conv2d(self.in_channels, self.out_channels, kernel_size=1, bias=True))
-            else:
-                self.shortcut = nn.Conv2d(self.in_channels, self.out_channels, kernel_size=1, bias=True)
-
+            self.shortcut = nn.Sequential(UpSample(), nn.Conv2d(self.in_channels, self.out_channels, kernel_size=1, bias=True))
 
     @property
     def should_apply_shortcut(self):
-        return (self.upsampling == 2) | (self.in_channels != self.out_channels)
+        return (self.in_channels != self.out_channels)
 
 class ResNetDecBasicBlock(ResNetDecBlock):
     def __init__(self, in_channels, out_channels, *args, **kwargs):
@@ -168,7 +161,9 @@ class ResNetDecCondBlock(ResNetDecBlock):
 
         super().__init__(in_channels, out_channels, *args, **kwargs)
 
-        if self.upsampling == 2:
+        self.upsampling = self.should_apply_shortcut
+
+        if self.upsampling:
             self.blocks = nn.Sequential(UpSample(),
                                         CondConv2d(self.in_channels, self.out_channels, sdim, kernel=self.kernel, bias=True, stride=1),
                                         ActivationRec(self.activation),

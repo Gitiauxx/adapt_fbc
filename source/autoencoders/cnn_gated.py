@@ -20,7 +20,7 @@ class CNNGated(TemplateModel):
 
         preconv = [nn.Conv2d(ichan[0], ichan[1], kernel_size=kernel, stride=1, padding=padding)]
         for i in range(1, len(ichan) - 1):
-            preconv.append(ResNetBasicBlock(ichan[i], ichan[i + 1], downsampling=2))
+            preconv.append(ResNetBasicBlock(ichan[i], ichan[i + 1]))
 
         self.preconv = nn.Sequential(*preconv)
 
@@ -39,7 +39,7 @@ class CNNGated(TemplateModel):
 
         postconv = []
         for i in reversed(range(2, len(ichan))):
-            postconv.append(ResNetDecCondBlock(ichan[i], ichan[i - 1], sdim + 1, upsampling=2))
+            postconv.append(ResNetDecCondBlock(ichan[i], ichan[i - 1], sdim + 1))
 
         self.postconv = nn.Sequential(*postconv)
 
@@ -156,7 +156,7 @@ class CNNGated(TemplateModel):
         q, centers, code = self.quantize(z * mask)
 
         b_with_s = torch.cat([b, s], -1)
-        out = self.decode(z, b_with_s)
+        out = self.decode(q, b_with_s)
 
         q = q.reshape(q.shape[0], self.zk, self.k)
         centers = centers.reshape(q.shape[0], self.zk, self.k)
