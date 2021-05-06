@@ -46,12 +46,12 @@ ploss:
   name: 'CECondLoss'
 
 device: 'cuda'
-n_epochs: 400
+n_epochs: 800
 method: 'compression'
 nclass_outcome: 10
 gamma: 0.0
 nclass_sensitive: 5
-annealing_epochs: 200
+annealing_epochs: 400
 warmup_epochs: 10
 lr_min: 0.00001
 
