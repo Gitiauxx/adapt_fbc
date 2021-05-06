@@ -24,9 +24,11 @@ net:
     - 64
     - 128
     - 128
+    - 256
   learning_rate: 0.001
   sigma: 0.5
   ncode: 3
+  embed_dim: 4
 
 pmodel:
   name: 'PixelCNN'
