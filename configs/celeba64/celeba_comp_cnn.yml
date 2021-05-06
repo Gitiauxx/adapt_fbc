@@ -25,7 +25,7 @@ net:
   learning_rate: 0.001
   sigma: 0.5
   ncode: 3
-  cout: 21
+  cout: 3
 
 pmodel:
   name: 'PixelCNN'
@@ -37,7 +37,8 @@ pmodel:
   kernel: 5
 
 loss:
-  name: 'DiscMixLogisticLoss'
+  #name: 'DiscMixLogisticLoss'
+  name: 'L2Loss'
 
 ploss:
   name: 'CECondLoss'
