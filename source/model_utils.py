@@ -170,10 +170,10 @@ class ResNetDecCondBlock(ResNetDecBlock):
                                         CondConv2d(self.out_channels, self.out_channels, sdim, kernel=self.kernel, bias=True, stride=1),
         )
         else:
-            self.blocks = nn.Sequential(CondConv2d(self.in_channels, self.out_channels, kernel=self.kernel, bias=True,
+            self.blocks = nn.Sequential(CondConv2d(self.in_channels, self.out_channels, sdim, kernel=self.kernel, bias=True,
                                                 stride=1),
                                         ActivationRec(self.activation),
-                                        CondConv2d(self.out_channels, self.out_channels, kernel=self.kernel, bias=True,
+                                        CondConv2d(self.out_channels, self.out_channels, sdim, kernel=self.kernel, bias=True,
                                                 stride=1))
 
     def forward(self, x):
