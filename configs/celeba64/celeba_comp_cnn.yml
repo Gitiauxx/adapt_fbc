@@ -29,6 +29,7 @@ net:
   sigma: 0.5
   ncode: 3
   cout: 21
+  embed_dim: 8
 
 pmodel:
   name: 'PixelCNN'
