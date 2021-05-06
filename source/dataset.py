@@ -224,6 +224,7 @@ class RepDataset(Dataset):
         :return:
         """
         beta = torch.tensor([threshold]).expand_as(s[:, 0]).float()
+        beta = beta.to(self.device)
         _, q, m, _, _ = self.generator.net.forward(x, s, beta)
         z = q.reshape(x.shape[0], -1).cpu().detach()
         return z
