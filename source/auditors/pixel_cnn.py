@@ -8,7 +8,7 @@ class MaskedCNN(nn.Conv2d):
     Taken from https://github.com/jzbontar/pixelcnn-pytorch
     """
 
-    def __init__(self, mask_type, *args, **kwargs):
+    def __init__(self, mask_type, *args, residual=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.mask_type = mask_type
         assert mask_type in ['A', 'B'], "Unknown Mask Type"
@@ -24,14 +24,20 @@ class MaskedCNN(nn.Conv2d):
             self.mask[:, :, height // 2, width // 2 + 1:] = 0
             self.mask[:, :, height // 2 + 1:, :] = 0
 
+        self.residual = residual
+
     def forward(self, x):
         self.weight.data *= self.mask
-        return super(MaskedCNN, self).forward(x)
+        out = super(MaskedCNN, self).forward(x)
+        if self.residual is not None:
+            out = self.residual * x + out
+
+        return out
 
 
 class PixelCNN(TemplateModel):
 
-    def __init__(self, kernel=7, channels=24, ncode=10, nclass=2, depth=2):
+    def __init__(self, kernel=7, channels=24, ncode=10, residual=None, depth=2):
         super().__init__()
 
         self.conv1 = nn.Sequential(MaskedCNN('A', 1, channels, kernel, 1, kernel // 2, bias=True),
@@ -39,12 +45,12 @@ class PixelCNN(TemplateModel):
 
         model_list = []
         for _ in range(depth):
-            model = nn.Sequential(MaskedCNN('B', channels, channels, kernel, 1, kernel // 2, bias=True),
+            model = nn.Sequential(MaskedCNN('B', channels, channels, kernel, 1, kernel // 2, bias=True, residual=residual),
                                   nn.ELU())
             model_list.append(model)
 
         self.model = nn.Sequential(*model_list)
-        self.final = MaskedCNN('B', channels, ncode, kernel, 1, kernel // 2, bias=True)
+        self.final = MaskedCNN('B', channels, ncode, kernel, 1, kernel // 2, bias=True, residual=residual)
 
         self.ncode = ncode
         self.param_init()
@@ -72,7 +78,7 @@ class PixelCNN(TemplateModel):
         residual = out
 
         out = self.model(out)
-        out = out + residual
+        out = out + 0.5 * residual
 
         out = self.final(out)
 
