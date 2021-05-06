@@ -45,7 +45,7 @@ loss:
 ploss:
   name: 'CECondLoss'
 
-device: 'cpu'
+device: 'cuda'
 n_epochs: 400
 method: 'compression'
 nclass_outcome: 10
