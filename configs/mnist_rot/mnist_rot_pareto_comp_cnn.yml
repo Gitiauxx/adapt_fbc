@@ -12,7 +12,7 @@ experiment_type: 'predict_outcome_sensitive'
 
 seed: 0
 
-name: 'mnist_rot_comp_cnn_all'
+name: 'mnist_rot_comp_cnn_all2'
 
 noisy: False
 
