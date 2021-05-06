@@ -19,9 +19,11 @@ net:
   ichan:
     - 1
     - 32
+    - 32
+    - 64
     - 64
     - 128
-    - 256
+    - 128
   learning_rate: 0.001
   sigma: 0.5
   ncode: 3
@@ -47,7 +49,7 @@ method: 'compression'
 nclass_outcome: 10
 gamma: 0.0
 nclass_sensitive: 5
-annealing_epochs: 100
+annealing_epochs: 200
 warmup_epochs: 10
 lr_min: 0.00001
 
