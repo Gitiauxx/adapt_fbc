@@ -42,7 +42,7 @@ ploss:
   name: 'CECondLoss'
 
 device: 'cuda'
-n_epochs: 0
+n_epochs: 400
 method: 'compression'
 nclass_outcome: 10
 gamma: 0.0
