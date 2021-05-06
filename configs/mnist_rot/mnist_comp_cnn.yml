@@ -1,9 +1,9 @@
 experiment: "mnist_rot_comp"
 
 data:
-  train: '../Data/mnist-rot/training.pt'
-  validate: '../Data/mnist-rot/training.pt'
-  test: '../Data/mnist-rot/test.pt'
+  train: '../data/mnist-rot/training.pt'
+  validate: '../data/mnist-rot/training.pt'
+  test: '../data/mnist-rot/test.pt'
   name: 'BinarizedMNISTRot'
   seed: 0
   range_data: 10000
