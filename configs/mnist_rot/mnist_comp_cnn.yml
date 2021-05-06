@@ -6,7 +6,7 @@ data:
   test: '../data/mnist-rot/test.pt'
   name: 'BinarizedMNISTRot'
   seed: 0
-  range_data: 10000
+  range_data: 20000
   reshape: False
 
 batch_size: 128
