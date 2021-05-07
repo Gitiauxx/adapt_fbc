@@ -9,7 +9,7 @@ data:
   range_data: 10000
   reshape: False
 
-batch_size: 512
+batch_size: 128
 net:
   name: 'CNNGated'
   zk: 4
