@@ -35,7 +35,7 @@ pmodel:
   channels: 64
   ncode: 3
   depth: 2
-  kernel: 5
+  kernel: 11
   #residual: 0.5
 
 loss:
@@ -54,5 +54,5 @@ annealing_epochs: 100
 warmup_epochs: 10
 lr_min: 0.00001
 
-run: 'checkpoints/mnist_rot_comp_cnn_all/epoch_399'
-prun: 'checkpoints/mnist_rot_comp_cnn_all/pmodel_epoch_399'
+#run: 'checkpoints/mnist_rot_comp_cnn_all/epoch_399'
+#prun: 'checkpoints/mnist_rot_comp_cnn_all/pmodel_epoch_399'
