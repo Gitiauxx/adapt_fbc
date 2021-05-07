@@ -12,7 +12,7 @@ data:
 batch_size: 128
 net:
   name: 'CNNGated'
-  zk: 4
+  zk: 8
   k: 8
   sdim: 5
   ichan:
