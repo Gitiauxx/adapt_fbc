@@ -12,7 +12,7 @@ batch_size: 512
 
 net:
   name: 'CNNGated'
-  zk: 8
+  zk: 16
   k: 16
   sdim: 2
   ichan:
@@ -34,11 +34,12 @@ net:
 pmodel:
   name: 'PixelCNN'
   learning_rate: 0.001
-  channels: 48
+  channels: 64
   ncode: 3
-  depth: 2
+  depth: 4
   nclass: 3
   kernel: 5
+  residual: 0.1
 
 loss:
   name: 'DiscMixLogisticLoss'
