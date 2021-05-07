@@ -50,7 +50,7 @@ class PixelCNN(TemplateModel):
             model_list.append(model)
 
         self.model = nn.Sequential(*model_list)
-        self.final = MaskedCNN('B', channels, ncode, kernel, 1, kernel // 2, bias=True, residual=residual)
+        self.final = MaskedCNN('B', channels, ncode, kernel, 1, kernel // 2, bias=True)
 
         self.ncode = ncode
         self.param_init()
