@@ -54,5 +54,5 @@ annealing_epochs: 100
 warmup_epochs: 10
 lr_min: 0.00001
 
-#run: 'checkpoints/mnist_rot_comp_cnn_all/epoch_399'
-#prun: 'checkpoints/mnist_rot_comp_cnn_all/pmodel_epoch_399'
+run: '/scratch/xgitiaux/afbc/checkpoints/mnist_rot_comp_cnn_all/epoch_130'
+prun: '/scratch/xgitiaux/afbc/checkpoints/mnist_rot_comp_cnn_all/pmodel_epoch_130'
