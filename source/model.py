@@ -137,12 +137,6 @@ class Model(object):
         ploss = self.ploss.forward(centers, logits)
         ploss = ploss.reshape(x.shape[0], -1) * mask
 
-        # m = torch.arange(ploss.shape[1]).unsqueeze(0).reshape(-1, q.shape[1], q.shape[2])
-        bs = centers[:, None, ...]
-        se = s[:, :, None, None] + 10**-8
-        b_loss = torch.abs((bs * se).sum(0) / se.sum(0) - bs.mean(0)).sum(dim=[1, 2, 0])
-
-        mask_loss = - (1 - mask).sum(1) * (beta).float()
         loss = loss + self.gamma * (beta * ploss.sum(dim=[1])).mean(0)
 
         if autoencoder:
@@ -182,7 +176,7 @@ class Model(object):
                 else:
                     annealing_factor = 1.0
 
-                autoencoder = True
+                autoencoder = (epoch % 2 == 0)
 
                 self.gamma = annealing_factor
 
