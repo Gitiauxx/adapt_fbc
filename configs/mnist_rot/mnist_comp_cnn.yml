@@ -36,7 +36,7 @@ pmodel:
   ncode: 3
   depth: 3
   kernel: 5
-  #residual: 0.5
+  residual: 0.5
 
 loss:
   name: 'BernouilliLoss'

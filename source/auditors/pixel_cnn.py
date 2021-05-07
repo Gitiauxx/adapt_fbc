@@ -29,8 +29,9 @@ class MaskedCNN(nn.Conv2d):
     def forward(self, x):
         self.weight.data *= self.mask
         out = super(MaskedCNN, self).forward(x)
+
         if self.residual is not None:
-            out = self.residual * x + out
+            out = self.residual * out + x
 
         return out
 
@@ -54,6 +55,7 @@ class PixelCNN(TemplateModel):
 
         self.ncode = ncode
         self.param_init()
+        self.residual = residual
 
     def param_init(self):
         """
@@ -78,7 +80,8 @@ class PixelCNN(TemplateModel):
         residual = out
 
         out = self.model(out)
-        out = out + 0.5 * residual
+        if self.residual is not None:
+            out = self.residual * out + residual
 
         out = self.final(out)
 
