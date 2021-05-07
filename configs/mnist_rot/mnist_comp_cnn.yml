@@ -35,7 +35,6 @@ pmodel:
   channels: 64
   ncode: 3
   depth: 3
-  nclass: 3
   kernel: 5
   residual: 0.5
 
