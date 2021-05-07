@@ -6,7 +6,7 @@ data:
   test: '../data/mnist-rot/test.pt'
   name: 'BinarizedMNISTRot'
   seed: 0
-  #range_data: 10000
+  range_data: 10000
   reshape: False
 
 batch_size: 512
@@ -34,9 +34,9 @@ pmodel:
   learning_rate: 0.001
   channels: 64
   ncode: 3
-  depth: 3
+  depth: 2
   kernel: 5
-  residual: 0.5
+  #residual: 0.5
 
 loss:
   name: 'BernouilliLoss'
