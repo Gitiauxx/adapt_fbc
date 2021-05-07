@@ -176,7 +176,7 @@ class Model(object):
                 else:
                     annealing_factor = 1.0
 
-                autoencoder = (epoch % 2 == 0)
+                autoencoder = True
 
                 self.gamma = annealing_factor
 

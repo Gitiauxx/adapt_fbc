@@ -35,7 +35,7 @@ pmodel:
   channels: 64
   ncode: 3
   depth: 2
-  kernel: 5
+  kernel: 11
   #residual: 0.5
 
 loss:
