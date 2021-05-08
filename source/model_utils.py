@@ -99,7 +99,7 @@ class ResidualBlock(nn.Module):
         residual = x
         if self.should_apply_shortcut: residual = self.shortcut(x)
         x = self.blocks(x)
-        x = residual + x
+        x = residual + 0.1 * x
         x = self.activate(x)
         return x
 
