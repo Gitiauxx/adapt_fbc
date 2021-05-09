@@ -161,7 +161,7 @@ class CNNGated(TemplateModel):
         q = q.reshape(q.shape[0], self.zk, self.k)
         centers = centers.reshape(q.shape[0], self.zk, self.k)
 
-        return out, q, mask, centers, code
+        return out, q, mask, centers, z
 
 
 

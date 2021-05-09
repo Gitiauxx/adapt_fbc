@@ -128,7 +128,7 @@ class Model(object):
         self.optimizer_pmodel.zero_grad()
 
         beta = self.beta * torch.rand_like(s[:, 0])
-        output, q, mask, centers, code = self.net.forward(x, s, beta)
+        output, q, mask, centers, z = self.net.forward(x, s, beta)
 
         logits = self.pmodel.forward(q)
 
@@ -137,7 +137,11 @@ class Model(object):
         ploss = self.ploss.forward(centers, logits)
         ploss = ploss.reshape(x.shape[0], -1) * mask
 
-        loss = loss + self.gamma * (beta * ploss.sum(dim=[1])).mean(0)
+        bs = z[:, None, ...] * mask[:, None, ...]
+        se = s[:, :, None]
+        b_loss = torch.abs((bs * se).sum(0) / se.sum(0) - bs.mean(0)).sum(dim=[1, 0])
+
+        loss = loss + self.gamma * (beta * ploss.sum(dim=[1])).mean(0) + 10 * b_loss
 
         if autoencoder:
             loss.backward()
@@ -241,7 +245,7 @@ class Model(object):
             y = batch['target'].to(self.device)
 
             b = beta.expand_as(s[:, 0]).to(self.device)
-            out, q, mask, centers, _ = self.net.forward(x, s, b)
+            out, q, mask, centers, z = self.net.forward(x, s, b)
 
             loss = self.loss.forward(y, out)
             rec_loss += loss.cpu().detach() * len(x) / len(data_loader.dataset)
@@ -251,9 +255,9 @@ class Model(object):
             acc = (pred == centers).float().mean()
             accuracy += acc.cpu().detach() * len(x) / len(data_loader.dataset)
 
-            bs = centers[:, None, ...]
-            se = s[:, :, None, None]
-            b_loss = torch.abs((bs * se).sum(0) / se.sum(0) - centers[:, None, ...].mean(0)).sum(dim=[1, 2, 0])
+            bs = z[:, None, ...] * mask[:, None, ...]
+            se = s[:, :, None]
+            b_loss = torch.abs((bs * se).sum(0) / se.sum(0) - bs.mean(0)).sum(dim=[1, 0])
             s_loss += b_loss.cpu().detach() * len(x) / len(data_loader.dataset)
 
             ploss = self.ploss.forward(centers, logits)
