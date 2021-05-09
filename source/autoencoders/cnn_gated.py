@@ -49,8 +49,7 @@ class CNNGated(TemplateModel):
         #                               )
 
         if cout is not None:
-            self.image = nn.Sequential(nn.Conv2d(ichan[1], cout, kernel_size=3, stride=1, padding=1),
-                                       nn.Sigmoid())
+            self.image = nn.Conv2d(ichan[1], cout, kernel_size=3, stride=1, padding=1)
         else:
             self.image = nn.Conv2d(ichan[1], ichan[0], kernel_size=3, stride=1, padding=1)
 
