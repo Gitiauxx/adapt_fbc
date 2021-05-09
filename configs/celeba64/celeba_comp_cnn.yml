@@ -41,7 +41,7 @@ pmodel:
   residual: 0.1
 
 loss:
-  name: 'L2Loss'
+  name: 'DiscMixLogisticLoss'
 
 ploss:
   name: 'CECondLoss'
