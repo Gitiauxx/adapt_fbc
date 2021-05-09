@@ -6,14 +6,14 @@ data:
   test: '../data/to-ml-celeba/test'
   name: 'CelebA64'
   seed: 0
-  range_data: 10000
+  range_data: 20000
 
-batch_size: 256
+batch_size: 512
 
 net:
   name: 'CNNGated'
-  zk: 16
-  k: 16
+  zk: 20
+  k: 20
   sdim: 2
   ichan:
     - 3
