@@ -137,11 +137,7 @@ class Model(object):
         ploss = self.ploss.forward(centers, logits)
         ploss = ploss.reshape(x.shape[0], -1) * mask
 
-        bs = z[:, None, ...] * mask[:, None, ...]
-        se = s[:, :, None]
-        b_loss = torch.abs((bs * se).sum(0) / (se.sum(0) + 10**-8) - bs.mean(0)).sum(dim=[1, 0])
-
-        loss = loss + self.gamma * (beta * ploss.sum(dim=[1])).mean(0) +  0.01 * b_loss
+        loss = loss + self.gamma * (beta * ploss.sum(dim=[1])).mean(0)
 
         if autoencoder:
             loss.backward()
