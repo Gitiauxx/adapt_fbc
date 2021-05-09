@@ -134,7 +134,7 @@ class CelebA64(Dataset):
         self.indextable = pd.read_csv(os.path.join(indexpath, 'index.csv'))
         self.indextable.set_index(np.arange(len(self.indextable)), inplace=True)
         self.indextable['file'] = self.indextable.file.apply(lambda file: os.path.join(indexpath, file))
-        self.transform = tf.Compose([CropCelebA64(), tf.Resize(64), tf.ToTensor()])
+        self.transform = tf.Compose([tf.Resize(64), tf.ToTensor()])
 
         if range_data is not None:
             range_data = min(len(self.indextable), range_data)
