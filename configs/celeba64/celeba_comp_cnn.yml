@@ -6,9 +6,9 @@ data:
   test: '../data/to-ml-celeba/test'
   name: 'CelebA64'
   seed: 0
-  range_data: 20000
+  range_data: 40000
 
-batch_size: 256
+batch_size: 512
 
 net:
   name: 'CNNGated'
@@ -28,7 +28,7 @@ net:
   learning_rate: 0.00005
   sigma: 0.5
   ncode: 3
-  cout: 3
+  cout: 21
   embed_dim: 8
 
 pmodel:
@@ -41,7 +41,7 @@ pmodel:
   residual: 0.1
 
 loss:
-  name: 'L2Loss'
+  name: 'DiscMixLogisticLoss'
 
 ploss:
   name: 'CECondLoss'
