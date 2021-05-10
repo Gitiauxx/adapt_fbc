@@ -49,7 +49,8 @@ class CNNGated(TemplateModel):
         #                               )
 
         if cout is not None:
-            self.image = nn.Conv2d(ichan[1], cout, kernel_size=3, stride=1, padding=1)
+            self.image = nn.Sequential(nn.Conv2d(ichan[1], cout, kernel_size=3, stride=1, padding=1),
+                                       nn.Sigmoid())
         else:
             self.image = nn.Conv2d(ichan[1], ichan[0], kernel_size=3, stride=1, padding=1)
 
@@ -155,7 +156,7 @@ class CNNGated(TemplateModel):
 
         q, centers, code = self.quantize(z * mask)
 
-        b_with_s = torch.cat([b, s], -1)
+        b_with_s = torch.cat([z, s], -1)
         out = self.decode(q, b_with_s)
 
         q = q.reshape(q.shape[0], self.zk, self.k)
