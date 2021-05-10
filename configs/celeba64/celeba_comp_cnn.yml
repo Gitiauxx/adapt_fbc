@@ -27,7 +27,7 @@ net:
     - 256
   learning_rate: 0.00005
   sigma: 0.5
-  ncode: 3
+  ncode: 8
   cout: 21
   embed_dim: 8
 
@@ -35,7 +35,7 @@ pmodel:
   name: 'PixelCNN'
   learning_rate: 0.001
   channels: 64
-  ncode: 3
+  ncode: 8
   depth: 4
   kernel: 5
   residual: 0.1
