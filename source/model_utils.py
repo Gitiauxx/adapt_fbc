@@ -25,6 +25,8 @@ class CondFC(nn.Module):
         self.batch = nn.BatchNorm1d(out_dim)
         self.act = activations[activation]
 
+        self.param_init()
+
     def forward(self, x):
         z = x[0]
         beta = x[1]
@@ -38,6 +40,22 @@ class CondFC(nn.Module):
         out = self.act(out)
 
         return out, beta
+
+    def param_init(self):
+        """
+        Xavier's initialization
+        """
+        for layer in self.modules():
+            if hasattr(layer, 'weight'):
+
+                if isinstance(layer, (nn.BatchNorm1d, nn.BatchNorm2d, nn.PReLU, nn.Tanh)):
+                    nn.init.normal_(layer.weight, mean=1., std=0.02)
+                else:
+                    nn.init.xavier_normal_(layer.weight)
+
+            if hasattr(layer, 'bias'):
+                if layer.bias is not None:
+                    nn.init.constant_(layer.bias, 0.)
 
 
 class UpSample(nn.Module):
