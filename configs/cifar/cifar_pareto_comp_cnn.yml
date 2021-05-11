@@ -1,0 +1,21 @@
+autoencoder: 'configs/cifar/cifar_comp_cnn.yml'
+
+probes_list:
+  - 'configs/probes/multi_width_256_depth_4.yml'
+
+task_list:
+  - 'configs/probes/multi_width_256_depth_4.yml'
+
+decode: False
+
+experiment_type: 'predict_outcome_sensitive'
+
+seed: 0
+
+name: 'cifar_comp_test'
+
+noisy: False
+
+logging_dir: '/scratch/xgitiaux/afbc'
+
+checkpoints: '/scratch/xgitiaux/afbc/checkpoints'

@@ -9,6 +9,8 @@ from torch.utils.data.dataloader import DataLoader
 import torchvision.transforms.functional as TF
 import torchvision.transforms as tf
 
+import torchvision.datasets as dset
+
 class MNISTRot(Dataset):
 
     def __init__(self, filepath, range_data=None, angles=[-45, -25, 0, 25, 45], random=True, reshape=True, angle_fixed=None):
@@ -181,6 +183,36 @@ class CelebA64(Dataset):
         :return: len(self.indextable)
         """
         return len(self.indextable)
+
+
+class CIFAR10(object):
+
+    def __init__(self, root, type='train'):
+        cifar_transform = tf.Compose([tf.RandomHorizontalFlip(), tf.ToTensor()])
+
+        if type == 'train':
+            self.cifar10 = dset.CIFAR10(root=root, train=True, transform=cifar_transform)
+        else:
+            self.cifar10 = dset.CIFAR10(root=root, train=False, transform=cifar_transform)
+
+    @classmethod
+    def from_dict(cls, config_data, type='train'):
+        """
+        Create a dataset from a config dictionary
+        """
+
+        root = config_data['root']
+        return cls(root, type=type)
+
+    def __getitem__(self, item):
+
+        img, y = self.cifar10[item]
+        s = torch.zeros(2)
+
+        return {'input': img, 'target': img, 'outcome': s, 'sensitive': s}
+
+    def __len__(self):
+        return len(self.cifar10)
 
 
 class RepDataset(Dataset):

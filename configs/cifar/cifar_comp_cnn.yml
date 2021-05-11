@@ -1,0 +1,53 @@
+experiment: "celeba64_comp"
+
+data:
+  root: '../data/'
+  name: 'CIFAR10'
+
+batch_size: 128
+
+net:
+  name: 'CNNGated'
+  zk: 16
+  k: 16
+  sdim: 2
+  ichan:
+    - 3
+    - 32
+    - 32
+    - 64
+    - 64
+    - 128
+    - 128
+    - 256
+    - 256
+  learning_rate: 0.01
+  sigma: 0.5
+  ncode: 8
+  cout: 100
+  embed_dim: 4
+
+pmodel:
+  name: 'PixelCNN'
+  learning_rate: 0.001
+  channels: 64
+  ncode: 8
+  depth: 4
+  kernel: 5
+  residual: 0.1
+
+loss:
+  name: 'DiscMixLogisticLoss'
+
+ploss:
+  name: 'CECondLoss'
+
+device: 'cuda'
+n_epochs: 400
+method: 'compression'
+nclass_outcome: 10
+gamma: 0.0
+nclass_sensitive: 2
+annealing_epochs: 400
+warmup_epochs: 10
+lr_min: 0.0001
