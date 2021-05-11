@@ -81,7 +81,7 @@ class CondConv2d(nn.Module):
 
         with torch.no_grad():
             weight = self.conv.weight / \
-                     (torch.sqrt(torch.sum(self.weight * self.weight, dim=[1, 2, 3])).view(-1, 1, 1, 1) + 1e-5)
+                     (torch.sqrt(torch.sum(self.conv.weight * self.conv.weight, dim=[1, 2, 3])).view(-1, 1, 1, 1) + 1e-5)
 
             bias = None
             out = nn.functional.conv2d(x, weight, bias, self.stride, self.padding, self.dilation, self.groups)
