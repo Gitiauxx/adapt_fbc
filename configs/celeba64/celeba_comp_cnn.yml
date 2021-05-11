@@ -28,7 +28,7 @@ net:
   learning_rate: 0.00005
   sigma: 0.5
   ncode: 8
-  cout: 21
+  cout: 100
   embed_dim: 8
 
 pmodel:
