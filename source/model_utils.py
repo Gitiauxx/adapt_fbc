@@ -84,7 +84,7 @@ class CondConv2d(nn.Module):
                      (torch.sqrt(torch.sum(self.conv.weight * self.conv.weight, dim=[1, 2, 3])).view(-1, 1, 1, 1) + 1e-5)
 
             bias = None
-            out = nn.functional.conv2d(x, weight, bias, self.stride, self.padding, self.dilation, self.groups)
+            out = nn.functional.conv2d(x, weight, bias, self.conv.stride, self.conv.padding, self.conv.dilation, self.conv.groups)
             mn = torch.mean(out, dim=[0, 2, 3])
             st = 5 * torch.std(out, dim=[0, 2, 3])
 
