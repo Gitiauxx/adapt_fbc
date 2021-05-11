@@ -72,8 +72,8 @@ class CNNGated(TemplateModel):
 
                 if isinstance(layer, (nn.BatchNorm1d, nn.BatchNorm2d, nn.PReLU, nn.Tanh)):
                     nn.init.normal_(layer.weight, mean=1., std=0.02)
-                elif isinstance(layer, nn.Linear):
-                    nn.init.xavier_normal_(layer.weight)
+                # elif isinstance(layer, nn.Linear):
+                #     nn.init.xavier_normal_(layer.weight)
 
             if hasattr(layer, 'bias'):
                 if layer.bias is not None:
@@ -159,7 +159,7 @@ class CNNGated(TemplateModel):
         q, centers, code = self.quantize(z * mask)
 
         b_with_s = torch.cat([b, s], -1)
-        out = self.decode(z, b_with_s)
+        out = self.decode(q, b_with_s)
 
         q = q.reshape(q.shape[0], self.zk, self.k)
         centers = centers.reshape(q.shape[0], self.zk, self.k)
