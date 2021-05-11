@@ -33,7 +33,7 @@ class CondFC(nn.Module):
         scale = self.scale(beta)
         bias = self.offset(beta)
 
-        out = out * (scale + 1) + bias
+        #out = out * (scale + 1) + bias
         out = self.batch(out)
         out = self.act(out)
 
@@ -83,6 +83,8 @@ class CondConv2d(nn.Module):
         offset = self.offset(beta)
 
         #out = scale.unsqueeze(2).unsqueeze(3) * out + offset.unsqueeze(2).unsqueeze(3)
+
+        out = self.batch(out)
 
         return out, beta
 
