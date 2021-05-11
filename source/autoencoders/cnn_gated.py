@@ -72,10 +72,12 @@ class CNNGated(TemplateModel):
 
                 if isinstance(layer, (nn.BatchNorm1d, nn.BatchNorm2d, nn.PReLU, nn.Tanh)):
                     nn.init.normal_(layer.weight, mean=1., std=0.02)
-                else:
+                elif isinstance(nn.Linear):
                     nn.init.xavier_normal_(layer.weight)
+
             if hasattr(layer, 'bias'):
-                nn.init.constant_(layer.bias, 0.)
+                if layer.bias is not None:
+                    nn.init.constant_(layer.bias, 0.)
 
     def encode(self, x):
         """
