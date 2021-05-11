@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from source.template_model import TemplateModel
-from source.model_utils import activations, _to_one_hot, ResNetBasicBlock, ResNetDecCondBlock, CondFC
+from source.model_utils import activations, _to_one_hot, ResNetBasicBlock, ResNetDecCondBlock, CondFC, Conv2d
 
 class CNNGated(TemplateModel):
     """
@@ -18,7 +18,7 @@ class CNNGated(TemplateModel):
         padding = kernel // 2
         self.embed_dim = embed_dim
 
-        preconv = [nn.Conv2d(ichan[0], ichan[1], kernel_size=kernel, stride=1, padding=padding)]
+        preconv = [Conv2d(ichan[0], ichan[1], kernel_size=kernel, stride=1, padding=padding)]
 
         for i in range(1, len(ichan) - 1):
             preconv.append(ResNetBasicBlock(ichan[i], ichan[i + 1]))
@@ -50,9 +50,9 @@ class CNNGated(TemplateModel):
         #                               )
 
         if cout is not None:
-            self.image = nn.Sequential(nn.Conv2d(ichan[1], cout, kernel_size=3, stride=1, padding=1))
+            self.image = nn.Sequential(Conv2d(ichan[1], cout, kernel_size=3, stride=1, padding=1))
         else:
-            self.image = nn.Conv2d(ichan[1], ichan[0], kernel_size=3, stride=1, padding=1)
+            self.image = Conv2d(ichan[1], ichan[0], kernel_size=3, stride=1, padding=1)
 
 
 

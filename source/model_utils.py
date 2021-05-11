@@ -53,9 +53,55 @@ class UpSample(nn.Module):
             return nn.functional.interpolate(x, scale_factor=2, mode='nearest')
 
 
+class Conv2d(nn.Conv2d):
+
+    def __init__(self, C_in, C_out, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=False, data_init=True, weight_norm=True):
+        super().__init__(C_in, C_out, kernel_size, stride=stride, padding=padding,
+                         dilation=dilation, groups=groups, bias=bias)
+
+        self.data_init = data_init
+        self.init_done = False
+
+    def forward(self, x):
+        """
+
+        Parameters
+        ----------
+        x (torch.Tensor): of size (B, C_in, H, W).
+
+        Returns
+        -------
+
+        """
+        if self.data_init and not self.init_done:
+            self.initialize_parameters(x)
+            self.init_done = True
+
+        weight = self.weight
+
+        return nn.functional.conv2d(x, weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
+
+    def initialize_parameters(self, x):
+
+        with torch.no_grad():
+            weight = self.weight / \
+                     (torch.sqrt(torch.sum(self.weight * self.weight, dim=[1, 2, 3])).view(-1, 1, 1, 1) + 1e-5)
+
+            bias = None
+            out = nn.functional.conv2d(x, weight, bias, self.stride, self.padding, self.dilation, self.groups)
+            mn = torch.mean(out, dim=[0, 2, 3])
+            st = 5 * torch.std(out, dim=[0, 2, 3])
+
+            if self.bias is not None:
+                self.bias.data = - mn / (st + 1e-5)
+
+            self.weight =  weight
+
+
+
 def conv_bn(in_channels, out_channels, kernel=3, stride=1, bias=True):
     padding = kernel // 2
-    return nn.Sequential(nn.Conv2d(in_channels, out_channels,
+    return nn.Sequential(Conv2d(in_channels, out_channels,
                                    kernel_size=kernel, padding=padding, stride=stride, bias=bias),
                          nn.BatchNorm2d(out_channels)
                         )
@@ -142,7 +188,7 @@ class ResNetResidualBlock(ResidualBlock):
         self.downsampling = 2 if self.should_apply_shortcut == True else 1
 
         if self.should_apply_shortcut:
-            self.shortcut = nn.Conv2d(self.in_channels, self.expanded_channels, kernel_size=1, stride=self.downsampling, bias=True)
+            self.shortcut = Conv2d(self.in_channels, self.expanded_channels, kernel_size=1, stride=self.downsampling, bias=True)
         else:
             self.shortcut = None
 
@@ -158,7 +204,7 @@ class ResNetDecBlock(ResidualBlock):
         self.kernel = kernel_size
 
         if self.should_apply_shortcut:
-            self.shortcut = nn.Sequential(UpSample(), nn.Conv2d(self.in_channels, self.out_channels, kernel_size=1, bias=True))
+            self.shortcut = nn.Sequential(UpSample(), Conv2d(self.in_channels, self.out_channels, kernel_size=1, bias=True))
 
     @property
     def should_apply_shortcut(self):
