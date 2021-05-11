@@ -101,7 +101,7 @@ class Conv2d(nn.Conv2d):
 
 def conv_bn(in_channels, out_channels, kernel=3, stride=1, bias=True):
     padding = kernel // 2
-    return nn.Sequential(Conv2d(in_channels, out_channels,
+    return nn.Sequential(nn.Conv2d(in_channels, out_channels,
                                    kernel_size=kernel, padding=padding, stride=stride, bias=bias),
                          nn.BatchNorm2d(out_channels)
                         )
@@ -188,7 +188,7 @@ class ResNetResidualBlock(ResidualBlock):
         self.downsampling = 2 if self.should_apply_shortcut == True else 1
 
         if self.should_apply_shortcut:
-            self.shortcut = Conv2d(self.in_channels, self.expanded_channels, kernel_size=1, stride=self.downsampling, bias=True)
+            self.shortcut = nn.Conv2d(self.in_channels, self.expanded_channels, kernel_size=1, stride=self.downsampling, bias=True)
         else:
             self.shortcut = None
 
@@ -204,7 +204,7 @@ class ResNetDecBlock(ResidualBlock):
         self.kernel = kernel_size
 
         if self.should_apply_shortcut:
-            self.shortcut = nn.Sequential(UpSample(), Conv2d(self.in_channels, self.out_channels, kernel_size=1, bias=True))
+            self.shortcut = nn.Sequential(UpSample(), nn.Conv2d(self.in_channels, self.out_channels, kernel_size=1, bias=True))
 
     @property
     def should_apply_shortcut(self):
@@ -258,7 +258,7 @@ class ResNetDecCondBlock(ResNetDecBlock):
             residual = self.shortcut(z)
 
         z, beta = self.blocks((z, beta))
-        z = residual + z
+        z = residual + 0.1 * z
         z = self.activate(z)
 
         return z, beta

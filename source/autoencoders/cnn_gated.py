@@ -18,7 +18,7 @@ class CNNGated(TemplateModel):
         padding = kernel // 2
         self.embed_dim = embed_dim
 
-        preconv = [Conv2d(ichan[0], ichan[1], kernel_size=kernel, stride=1, padding=padding)]
+        preconv = [nn.Conv2d(ichan[0], ichan[1], kernel_size=kernel, stride=1, padding=padding)]
 
         for i in range(1, len(ichan) - 1):
             preconv.append(ResNetBasicBlock(ichan[i], ichan[i + 1]))
@@ -50,9 +50,9 @@ class CNNGated(TemplateModel):
         #                               )
 
         if cout is not None:
-            self.image = nn.Sequential(Conv2d(ichan[1], cout, kernel_size=3, stride=1, padding=1))
+            self.image = nn.Sequential(nn.Conv2d(ichan[1], cout, kernel_size=3, stride=1, padding=1))
         else:
-            self.image = Conv2d(ichan[1], ichan[0], kernel_size=3, stride=1, padding=1)
+            self.image = nn.Conv2d(ichan[1], ichan[0], kernel_size=3, stride=1, padding=1)
 
 
 
@@ -72,8 +72,8 @@ class CNNGated(TemplateModel):
 
                 if isinstance(layer, (nn.BatchNorm1d, nn.BatchNorm2d, nn.PReLU, nn.Tanh)):
                     nn.init.normal_(layer.weight, mean=1., std=0.02)
-                # elif isinstance(layer, nn.Linear):
-                #     nn.init.xavier_normal_(layer.weight)
+                else:
+                    nn.init.xavier_normal_(layer.weight)
 
             if hasattr(layer, 'bias'):
                 if layer.bias is not None:
