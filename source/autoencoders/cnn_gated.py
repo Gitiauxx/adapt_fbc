@@ -72,7 +72,7 @@ class CNNGated(TemplateModel):
 
                 if isinstance(layer, (nn.BatchNorm1d, nn.BatchNorm2d, nn.PReLU, nn.Tanh)):
                     nn.init.normal_(layer.weight, mean=1., std=0.02)
-                elif isinstance(nn.Linear):
+                elif isinstance(layer, nn.Linear):
                     nn.init.xavier_normal_(layer.weight)
 
             if hasattr(layer, 'bias'):
