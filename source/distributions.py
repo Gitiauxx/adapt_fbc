@@ -88,11 +88,11 @@ class DiscMixLogistic:
         cdf_plus = torch.sigmoid(plus_in)
         min_in = inv_stdv * (centered - 1. / self.max_val)
         cdf_min = torch.sigmoid(min_in)
-        log_cdf_plus = plus_in - nn.functional.softplus(plus_in)
-        log_one_minus_cdf_min = - nn.functional.softplus(min_in)
+        log_cdf_plus = plus_in - torch.nn.functional.softplus(plus_in)
+        log_one_minus_cdf_min = - torch.nn.functional.softplus(min_in)
         cdf_delta = cdf_plus - cdf_min
         mid_in = inv_stdv * centered
-        log_pdf_mid = mid_in - self.log_scales - 2. * nn.functional.softplus(mid_in)
+        log_pdf_mid = mid_in - self.log_scales - 2. * torch.nn.functional.softplus(mid_in)
 
         log_prob_mid_safe = torch.where(cdf_delta > 1e-5,
                                         torch.log(torch.clamp(cdf_delta, min=1e-10)),
@@ -102,7 +102,7 @@ class DiscMixLogistic:
         log_probs = torch.where(samples < -0.999, log_cdf_plus, torch.where(samples > 0.99, log_one_minus_cdf_min,
                                                                             log_prob_mid_safe))  # B, 3, M, H, W
 
-        log_probs = torch.sum(log_probs, 1) + nn.functional.log_softmax(self.logit_probs, dim=1)  # B, M, H, W
+        log_probs = torch.sum(log_probs, 1) + torch.nn.functional.log_softmax(self.logit_probs, dim=1)  # B, M, H, W
         return torch.logsumexp(log_probs, dim=1)  # B, H, W
 
     def sample(self, t=1.):
