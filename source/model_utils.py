@@ -33,7 +33,7 @@ class CondFC(nn.Module):
         scale = self.scale(beta)
         bias = self.offset(beta)
 
-        out = out * (scale + 1) + bias
+        #out = out * (scale + 1) + bias
         out = self.batch(out)
         out = self.act(out)
 
@@ -74,6 +74,22 @@ class CondConv2d(nn.Module):
 
         self.batch = nn.BatchNorm2d(out_channels)
 
+    def initialize_parameters(self, x):
+
+        with torch.no_grad():
+            weight = self.conv.weight / \
+                     (torch.sqrt(torch.sum(self.weight * self.weight, dim=[1, 2, 3])).view(-1, 1, 1, 1) + 1e-5)
+
+            bias = None
+            out = nn.functional.conv2d(x, weight, bias, self.stride, self.padding, self.dilation, self.groups)
+            mn = torch.mean(out, dim=[0, 2, 3])
+            st = 5 * torch.std(out, dim=[0, 2, 3])
+
+            if self.conv.bias is not None:
+                self.conv.bias.data = - mn / (st + 1e-5)
+
+            self.conv.weight = weight
+
     def forward(self, x):
         z = x[0]
         beta = x[1]
@@ -82,7 +98,7 @@ class CondConv2d(nn.Module):
         scale = self.scale(beta)
         offset = self.offset(beta)
 
-        out = scale.unsqueeze(2).unsqueeze(3) * out + offset.unsqueeze(2).unsqueeze(3)
+        #out = scale.unsqueeze(2).unsqueeze(3) * out + offset.unsqueeze(2).unsqueeze(3)
 
         out = self.batch(out)
 
