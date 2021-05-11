@@ -63,7 +63,7 @@ def conv_bn(in_channels, out_channels, kernel=3, stride=1, bias=True):
 
 class CondConv2d(nn.Module):
 
-    def __init__(self, in_channels, out_channels, sdim, kernel=3, stride=1, bias=True):
+    def __init__(self, in_channels, out_channels, sdim, kernel=3, stride=1, bias=True, data_init=True):
         super().__init__()
         padding = kernel // 2
 
@@ -73,6 +73,9 @@ class CondConv2d(nn.Module):
         self.offset = nn.Sequential(nn.Linear(sdim, out_channels), nn.ELU())
 
         self.batch = nn.BatchNorm2d(out_channels)
+
+        self.data_init = data_init
+        self.init_done = False
 
     def initialize_parameters(self, x):
 
@@ -91,8 +94,13 @@ class CondConv2d(nn.Module):
             self.conv.weight = weight
 
     def forward(self, x):
+
         z = x[0]
         beta = x[1]
+
+        if self.data_init and not self.init_done:
+            self.initialize_parameters(z)
+            self.init_done = True
 
         out = self.conv(z)
         scale = self.scale(beta)
