@@ -86,8 +86,9 @@ class CNNGated(TemplateModel):
         :return:
         """
         h = self.preconv(x)
-        h = h.reshape(x.shape[0], -1)
-        return self.encoder(h)
+        return h
+        # h = h.reshape(x.shape[0], -1)
+        # return self.encoder(h)
 
     def decode(self, b, beta):
         """
@@ -95,8 +96,9 @@ class CNNGated(TemplateModel):
         :param b:
         :return:
         """
-        out, beta = self.decoder((b, beta))
-        out = out.reshape(out.shape[0], -1, self.embed_dim, self.embed_dim)
+        # out, beta = self.decoder((b, beta))
+        # out = out.reshape(out.shape[0], -1, self.embed_dim, self.embed_dim)
+        out = b
         out, beta = self.postconv((out, beta))
 
         return self.image(out)
@@ -154,15 +156,19 @@ class CNNGated(TemplateModel):
         z = self.encode(x)
         b = beta.unsqueeze(1)
 
-        mask = self.compute_gate(z, b)
+        mask = torch.zeros((z.shape[0], self.k * self.zk)).to(x.device())
+            #self.compute_gate(z, b)
 
-        q, centers, code = self.quantize(z * mask)
-
+        # q, centers, code = self.quantize(z * mask)
+        #
         b_with_s = torch.cat([b, s], -1)
-        out = self.decode(q, b_with_s)
+        out = self.decode(z, b_with_s)
 
-        q = q.reshape(q.shape[0], self.zk, self.k)
-        centers = centers.reshape(q.shape[0], self.zk, self.k)
+        # q = q.reshape(q.shape[0], self.zk, self.k)
+        # centers = centers.reshape(q.shape[0], self.zk, self.k)
+
+        q = mask.reshape(-1, self.zk, self.k)
+        centers = q
 
         return out, q, mask, centers, z
 
