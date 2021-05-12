@@ -17,7 +17,7 @@ net:
     - 64
     - 128
     - 256
-  learning_rate: 0.001
+  learning_rate: 0.0005
   sigma: 0.5
   ncode: 8
   cout: 3
