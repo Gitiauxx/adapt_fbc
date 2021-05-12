@@ -251,7 +251,7 @@ class Model(object):
             acc = (pred == centers).float().mean()
             accuracy += acc.cpu().detach() * len(x) / len(data_loader.dataset)
 
-            bs = z[:, None, ...] * mask[:, None, ...]
+            bs = b[:, None, ...] * mask[:, None, ...]
             se = s[:, :, None]
             b_loss = torch.abs((bs * se).sum(0) / se.sum(0) - bs.mean(0)).sum(dim=[1, 0])
             s_loss += b_loss.cpu().detach() * len(x) / len(data_loader.dataset)
