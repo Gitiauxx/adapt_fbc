@@ -136,7 +136,7 @@ class CondConv2d(nn.Module):
         self.scale = nn.Sequential(nn.Linear(sdim, out_channels), nn.Tanh())
         self.offset = nn.Sequential(nn.Linear(sdim, out_channels), nn.ELU())
 
-        self.batch = nn.BatchNorm2d(out_channels)
+        #self.batch = nn.BatchNorm2d(out_channels)
 
         self.data_init = data_init
         self.init_done = False
@@ -172,7 +172,7 @@ class CondConv2d(nn.Module):
 
         #out = scale.unsqueeze(2).unsqueeze(3) * out + offset.unsqueeze(2).unsqueeze(3)
 
-        out = self.batch(out)
+        #out = self.batch(out)
 
         return out, beta
 
