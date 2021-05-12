@@ -4,7 +4,7 @@ data:
   root: '../data/'
   name: 'CIFAR10'
 
-batch_size: 512
+batch_size: 128
 
 net:
   name: 'CNNGated'
