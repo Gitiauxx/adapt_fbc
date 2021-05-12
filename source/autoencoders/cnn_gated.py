@@ -156,7 +156,7 @@ class CNNGated(TemplateModel):
         z = self.encode(x)
         b = beta.unsqueeze(1)
 
-        mask = torch.zeros((z.shape[0], self.k * self.zk)).to(x.device())
+        mask = torch.zeros((z.shape[0], self.k * self.zk)).to(x.device)
             #self.compute_gate(z, b)
 
         # q, centers, code = self.quantize(z * mask)
