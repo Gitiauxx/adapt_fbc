@@ -23,4 +23,6 @@ class L2Loss(TemplateLoss):
         rec_loss = (target - output) ** 2
         rec_loss = torch.mean(rec_loss.reshape(target.shape[0], -1).sum(-1))
 
+        rec_loss = torch.nn.MSELoss()(output, target)
+
         return rec_loss
