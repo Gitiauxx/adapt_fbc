@@ -139,7 +139,7 @@ class CondConv2d(nn.Module):
         #self.batch = nn.BatchNorm2d(out_channels)
 
         self.data_init = data_init
-        self.init_done = False
+        self.init_done = True
 
     def initialize_parameters(self, x):
 
