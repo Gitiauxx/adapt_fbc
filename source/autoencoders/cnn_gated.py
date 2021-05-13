@@ -86,9 +86,8 @@ class CNNGated(TemplateModel):
         :return:
         """
         h = self.preconv(x)
-        return h
-        # h = h.reshape(x.shape[0], -1)
-        # return self.encoder(h)
+        h = h.reshape(x.shape[0], -1)
+        return self.encoder(h)
 
     def decode(self, b, beta):
         """
@@ -96,9 +95,8 @@ class CNNGated(TemplateModel):
         :param b:
         :return:
         """
-        # out, beta = self.decoder((b, beta))
-        # out = out.reshape(out.shape[0], -1, self.embed_dim, self.embed_dim)
-        out = b
+        out, beta = self.decoder((b, beta))
+        out = out.reshape(out.shape[0], -1, self.embed_dim, self.embed_dim)
         out, beta = self.postconv((out, beta))
 
         return self.image(out)
