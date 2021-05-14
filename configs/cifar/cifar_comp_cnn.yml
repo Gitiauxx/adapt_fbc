@@ -17,7 +17,7 @@ net:
     - 128
     - 16
   learning_rate: 0.0001
-  sigma: 0.5
+  sigma: 1
   ncode: 8
   cout: 100
   embed_dim: 8
