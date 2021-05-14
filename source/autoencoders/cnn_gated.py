@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 import torch.nn as nn
 
 from source.template_model import TemplateModel
@@ -56,8 +57,8 @@ class CNNGated(TemplateModel):
 
 
 
-        self.k = k
-        self.zk = zk
+        self.k = int(np.sqrt(ichan[-1])) * embed_dim
+        self.zk = int(np.sqrt(ichan[-1])) * embed_dim
         self.sigma = sigma
         self.embed_dim = embed_dim
         self.code = nn.Parameter(torch.arange(ncode, dtype=float, requires_grad=True).float() / (ncode - 1))
@@ -164,10 +165,10 @@ class CNNGated(TemplateModel):
         b_with_s = torch.cat([b, s], -1)
         out = self.decode(q, b_with_s)
 
-        # q = q.reshape(q.shape[0], self.zk, self.k)
-        # centers = centers.reshape(q.shape[0], self.zk, self.k)
+        q = q.reshape(q.shape[0], self.zk, self.k)
+        centers = centers.reshape(q.shape[0], self.zk, self.k)
 
-        q = mask.reshape(-1, self.zk, self.k)
+        #q = mask.reshape(-1, self.zk, self.k)
         centers = q
 
         return out, q, mask, centers, z
