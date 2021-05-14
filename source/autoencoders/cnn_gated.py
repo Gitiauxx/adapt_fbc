@@ -86,8 +86,9 @@ class CNNGated(TemplateModel):
         :return:
         """
         h = self.preconv(x)
-        h = h.reshape(x.shape[0], -1)
-        return self.encoder(h)
+        return h
+        # h = h.reshape(x.shape[0], -1)
+        # return self.encoder(h)
 
     def decode(self, b, beta):
         """
@@ -95,8 +96,9 @@ class CNNGated(TemplateModel):
         :param b:
         :return:
         """
-        out, beta = self.decoder((b, beta))
-        out = out.reshape(out.shape[0], -1, self.embed_dim, self.embed_dim)
+        # out, beta = self.decoder((b, beta))
+        # out = out.reshape(out.shape[0], -1, self.embed_dim, self.embed_dim)
+        out = b
         out, beta = self.postconv((out, beta))
 
         return self.image(out)
@@ -110,7 +112,7 @@ class CNNGated(TemplateModel):
         z = (z + 1) / 2
         code = self.code.detach()
         code_idx = torch.arange(self.code.shape[0], device=code.device)
-        code = code[None, None, :]
+        code = code[None, None, None, None, :]
         z_code = (z.unsqueeze(-1) - code) ** 2
 
         z_soft = torch.sum(nn.Softmax(dim=-1)(- self.sigma * z_code) * code, dim=-1)
@@ -125,7 +127,7 @@ class CNNGated(TemplateModel):
         q = (z_hard - z_soft).detach() + z_soft
         c = (centers - centers_soft).detach() + centers_soft
 
-        return q, c, center_code.mean(dim=[0, 1])
+        return q, c, center_code.mean(dim=[0, 1, 2, 3])
 
     def compute_gate(self, z, beta):
         """
@@ -157,10 +159,10 @@ class CNNGated(TemplateModel):
         mask = torch.zeros((z.shape[0], self.k * self.zk)).to(x.device)
             #self.compute_gate(z, b)
 
-        # q, centers, code = self.quantize(z * mask)
+        q, centers, code = self.quantize(z)
         #
         b_with_s = torch.cat([b, s], -1)
-        out = self.decode(z, b_with_s)
+        out = self.decode(q, b_with_s)
 
         # q = q.reshape(q.shape[0], self.zk, self.k)
         # centers = centers.reshape(q.shape[0], self.zk, self.k)
