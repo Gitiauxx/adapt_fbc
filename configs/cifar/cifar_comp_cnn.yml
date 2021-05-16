@@ -15,7 +15,7 @@ net:
     - 3
     - 32
     - 64
-    - 256
+    - 16
   learning_rate: 0.00005
   sigma: 1
   ncode: 2
