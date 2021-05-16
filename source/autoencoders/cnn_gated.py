@@ -111,7 +111,7 @@ class CNNGated(TemplateModel):
         :return:
         """
         z = (z + 1) / 2
-        code = self.code.detach()
+        code = self.code
         code_idx = torch.arange(self.code.shape[0], device=code.device)
         code = code[None, None, None, None, :]
         z_code = (z.unsqueeze(-1) - code) ** 2
@@ -169,7 +169,7 @@ class CNNGated(TemplateModel):
         centers = centers.reshape(q.shape[0], self.zk, self.k)
 
         #q = mask.reshape(-1, self.zk, self.k)
-        centers = q
+        #centers = q
 
         return out, q, mask, centers, z
 

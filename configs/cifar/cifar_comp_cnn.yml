@@ -13,9 +13,9 @@ net:
   sdim: 2
   ichan:
     - 3
+    - 32
     - 64
     - 128
-    - 16
   learning_rate: 0.00005
   sigma: 1
   ncode: 2
