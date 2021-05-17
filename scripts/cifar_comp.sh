@@ -11,8 +11,8 @@
 #SBATCH --tasks 1
 #SBATCH --mem=64G
 #SBATCH --qos=csqos
-#SBATCH --gres=gpu:2
-#SBATCH -t 0-5:00
+#SBATCH --gres=gpu:4
+#SBATCH -t 0-10:00
 
 module load python/3.6.7
 module load cuda/10.2
