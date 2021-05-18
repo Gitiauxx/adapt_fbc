@@ -8,7 +8,7 @@ data:
   seed: 0
   range_data: 40000
 
-batch_size: 512
+batch_size: 256
 
 net:
   name: 'CNNGated'
@@ -25,8 +25,8 @@ net:
     - 128
     - 256
     - 256
-  learning_rate: 0.00005
-  sigma: 0.5
+  learning_rate: 0.0001
+  sigma: 1.0
   ncode: 8
   cout: 100
   embed_dim: 8
