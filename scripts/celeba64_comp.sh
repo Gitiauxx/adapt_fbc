@@ -10,7 +10,7 @@
 #SBATCH --nodes 1
 #SBATCH --tasks 1
 #SBATCH --mem=12G
-#SBATCH --cpus-per-task=2
+#SBATCH --cpus-per-gpu=8
 #SBATCH --qos=csqos
 #SBATCH --gres=gpu:2
 
