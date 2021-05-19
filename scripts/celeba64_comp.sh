@@ -9,8 +9,7 @@
 #SBATCH --partition=gpuq
 #SBATCH --nodes 1
 #SBATCH --tasks 1
-#SBATCH --mem=64G
-#SBATCH --cpus-per-task:8
+#SBATCH --mem=8G
 #SBATCH --qos=csqos
 #SBATCH --gres=gpu:4
 

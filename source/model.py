@@ -246,6 +246,11 @@ class Model(object):
             b = beta.expand_as(s[:, 0]).to(self.device)
             out, q, mask, centers, z = self.net.forward(x, s, b)
 
+            q = q.detach()
+            out = out.detach()
+            mask = mask.detach()
+            z = z.detach()
+
             loss = self.loss.forward(y, out)
             rec_loss += loss.cpu().detach() * len(x) / len(data_loader.dataset)
 
