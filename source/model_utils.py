@@ -170,8 +170,8 @@ class CondConv2d(nn.Module):
         scale = self.scale(beta)
         offset = self.offset(beta)
 
-        out = scale.unsqueeze(2).unsqueeze(3) * out + offset.unsqueeze(2).unsqueeze(3)
-        out = self.batch(out)
+        #out = scale.unsqueeze(2).unsqueeze(3) * out + offset.unsqueeze(2).unsqueeze(3)
+        #out = self.batch(out)
 
         return out, beta
 
