@@ -2,6 +2,8 @@ import logging
 import sys
 import warnings
 
+import numpy as np
+
 def disable_warnings():
     """
     Disable printing of warnings
@@ -32,3 +34,6 @@ def get_logger(name):
     logger.addHandler(console)
 
     return logger
+
+def count_parameters_in_M(model):
+    return np.sum(np.prod(v.size()) for name, v in model.named_parameters() if "auxiliary" not in name)/1e6

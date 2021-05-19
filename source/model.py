@@ -3,7 +3,7 @@ import numpy as np
 
 from torch.nn.parallel.data_parallel import DataParallel
 
-from source.utils import get_logger
+from source.utils import get_logger, count_parameters_in_M
 from source.losses import *
 from source.autoencoders import *
 from source.auditors import *
@@ -42,6 +42,9 @@ class Model(object):
 
         self.pmodel = pmodel.to(device)
         self.ploss = ploss
+
+        logger.info('param size for autoencoder = %fM ', count_parameters_in_M(net))
+        logger.info('param size for entropy encoder = %fM ', count_parameters_in_M(pmodel))
 
         self.learning_rate = learning_rate['autoencoder']
         self.learning_rate_p = learning_rate['pmodel']
