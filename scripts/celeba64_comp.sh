@@ -12,11 +12,11 @@
 #SBATCH --mem=12G
 #SBATCH --cpus-per-task=2
 #SBATCH --qos=csqos
-#SBATCH --gres=gpu:4
+#SBATCH --gres=gpu:1
 
 module load python/3.8.4
 module load cuda/10.2
 source ../afbc-env/bin/activate
 
 echo $SLURM_ARRAY_TASK_ID
-../fvae-env/bin/python3 eval.py --config_path configs/celeba64/celeba_pareto_comp_cnn.yml --seed 0 --beta 0.0 --tmax 1.0
+../afbc-env/bin/python3 eval.py --config_path configs/celeba64/celeba_pareto_comp_cnn.yml --seed 0 --beta 0.0 --tmax 1.0
