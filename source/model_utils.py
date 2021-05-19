@@ -136,7 +136,7 @@ class CondConv2d(nn.Module):
         self.scale = nn.Sequential(nn.Linear(sdim, out_channels), nn.Tanh())
         self.offset = nn.Sequential(nn.Linear(sdim, out_channels), nn.ELU())
 
-        #self.batch = nn.BatchNorm2d(out_channels)
+        self.batch = nn.BatchNorm2d(out_channels)
 
         self.data_init = data_init
         self.init_done = True
@@ -170,9 +170,8 @@ class CondConv2d(nn.Module):
         scale = self.scale(beta)
         offset = self.offset(beta)
 
-        #out = scale.unsqueeze(2).unsqueeze(3) * out + offset.unsqueeze(2).unsqueeze(3)
-
-        #out = self.batch(out)
+        out = scale.unsqueeze(2).unsqueeze(3) * out + offset.unsqueeze(2).unsqueeze(3)
+        out = self.batch(out)
 
         return out, beta
 
@@ -189,7 +188,7 @@ class ResidualBlock(nn.Module):
         residual = x
         if self.should_apply_shortcut: residual = self.shortcut(x)
         x = self.blocks(x)
-        #x = residual + 0.1 * x
+        x = residual + 0.1 * x
         x = self.activate(x)
         return x
 
@@ -276,7 +275,7 @@ class ResNetDecCondBlock(ResNetDecBlock):
             residual = self.shortcut(z)
 
         z, beta = self.blocks((z, beta))
-        #z = residual + 0.1 * z
+        z = residual + 0.1 * z
         z = self.activate(z)
 
         return z, beta
