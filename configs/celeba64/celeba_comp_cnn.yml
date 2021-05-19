@@ -6,7 +6,7 @@ data:
   test: '../data/to-ml-celeba/test'
   name: 'CelebA64'
   seed: 0
-  range_data: 20000
+  range_data: 2000
 
 batch_size: 64
 
