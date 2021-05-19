@@ -31,13 +31,13 @@ class CNNGated(TemplateModel):
         #                              ResNetBasicBlock(ichan[2], ichan[3], downsampling=2),
         #                              ResNetBasicBlock(ichan[3], ichan[3], downsampling=2))
 
-        self.encoder = nn.Sequential(nn.Linear(ichan[-1] * embed_dim ** 2, zk * k),
-                                    nn.BatchNorm1d(zk * k),
-                                    nn.Tanh())
+        # self.encoder = nn.Sequential(nn.Linear(ichan[-1] * embed_dim ** 2, zk * k),
+        #                             nn.BatchNorm1d(zk * k),
+        #                             nn.Tanh())
 
         self.gate = nn.Sequential(CondFC(zk * k, 1, 1, activation='sigmoid'))
 
-        self.decoder = CondFC(zk * k, ichan[-1] * embed_dim ** 2, sdim + 1)
+        #self.decoder = CondFC(zk * k, ichan[-1] * embed_dim ** 2, sdim + 1)
 
         postconv = []
         for i in reversed(range(2, len(ichan))):
