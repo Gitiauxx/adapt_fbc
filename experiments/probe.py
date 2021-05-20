@@ -93,9 +93,10 @@ class Probe(object):
 
         train_loader = DataLoader(train_dset,
                                   batch_size=self.config_autoencoder['batch_size'],
-                                  shuffle=True)
+                                  shuffle=True, pin_memory=True, num_workers=16)
         validate_loader = DataLoader(validate_dset,
-                                 batch_size=self.config_autoencoder['batch_size'])
+                                     batch_size=self.config_autoencoder['batch_size'],
+                                     pin_memory=True, num_workers=16)
 
         logger.info(f'Train autoencoder to generate representations')
         self.autoencoder.train(train_loader, validate_loader, n_epochs, self.results,

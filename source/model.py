@@ -191,9 +191,9 @@ class Model(object):
                 sensitive = batch['sensitive'].to(self.device)
 
                 loss = self.optimize_parameters(input, target, sensitive, autoencoder=autoencoder)
-                train_loss += loss.detach().cpu() * len(input) / len(train_loader.dataset)
+                train_loss += loss.detach() * len(input) / len(train_loader.dataset)
 
-            writer['training']['rec_loss'][epoch] = train_loss.item()
+            writer['training']['rec_loss'][epoch] = train_loss.cpu().item()
 
             logger.info(f'Epoch: {epoch} Train loss: {train_loss}')
 
@@ -255,12 +255,12 @@ class Model(object):
             z = z.detach()
 
             loss = self.loss.forward(y, out)
-            rec_loss += loss.cpu().detach() * len(x) / len(data_loader.dataset)
+            rec_loss += loss.detach() * len(x) / len(data_loader.dataset)
 
             logits = self.pmodel.forward(q)
             pred = logits.argmax(1)
             acc = (pred == centers).float().mean()
-            accuracy += acc.cpu().detach() * len(x) / len(data_loader.dataset)
+            accuracy += acc.detach() * len(x) / len(data_loader.dataset)
 
             # bs = b[:, None, ...] * mask[:, None, ...]
             # se = s[:, :, None]
@@ -268,9 +268,9 @@ class Model(object):
             # s_loss += b_loss.cpu().detach() * len(x) / len(data_loader.dataset)
 
             ploss = self.ploss.forward(centers, logits)
-            entr_loss += ploss.sum(dim=[1, 2]).mean().cpu().detach() * len(x) / len(data_loader.dataset)
+            entr_loss += ploss.sum(dim=[1, 2]).mean().detach() * len(x) / len(data_loader.dataset)
 
             act = mask.sum(1).mean(0)
-            active_bits += act.cpu().detach() * len(x) / len(data_loader.dataset)
+            active_bits += act.detach() * len(x) / len(data_loader.dataset)
 
-        return rec_loss, accuracy, s_loss, entr_loss, active_bits
+        return rec_loss.cpu(), accuracy.cpu(), s_loss.cpu(), entr_loss.cpu(), active_bits.cpu()
