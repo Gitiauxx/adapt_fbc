@@ -93,8 +93,7 @@ class Probe(object):
 
         train_loader = DataLoader(train_dset,
                                   batch_size=self.config_autoencoder['batch_size'],
-                                  shuffle=True,
-                                  num_workers=8)
+                                  shuffle=True)
         validate_loader = DataLoader(validate_dset,
                                  batch_size=self.config_autoencoder['batch_size'])
 
