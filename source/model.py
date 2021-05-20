@@ -112,6 +112,9 @@ class Model(object):
         ploss = globals()[name_ploss].from_dict(config_dict['ploss'])
         pmodel = globals()[name_pmodel].from_dict(config_dict['pmodel'])
 
+        if torch.cuda.device_count() > 1:
+            pmodel = _CustomDataParallel(pmodel)
+
         model = cls(net, loss, ploss, pmodel, learning_rate=lr,
                     device=device, beta=beta, gamma=gamma, method=method,
                     annealing_epochs=annealing_epochs, warmup_epochs=warmup_epochs)
