@@ -22,8 +22,6 @@ net:
     - 64
     - 64
     - 128
-    - 128
-    - 256
     - 256
   learning_rate: 0.0001
   sigma: 1.0
@@ -38,7 +36,7 @@ pmodel:
   ncode: 8
   depth: 4
   kernel: 5
-  residual: 0.1
+  #residual: 0.1
 
 loss:
   name: 'DiscMixLogisticLoss'
