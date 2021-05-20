@@ -25,7 +25,7 @@ net:
     - 128
     - 256
     - 256
-  learning_rate: 0.0001
+  learning_rate: 0.0004
   sigma: 1.0
   ncode: 8
   cout: 100
@@ -54,7 +54,7 @@ gamma: 0.0
 nclass_sensitive: 2
 annealing_epochs: 400
 warmup_epochs: 10
-lr_min: 0.00001
+lr_min: 0.00004
 
 #run: 'checkpoints/mnist_rot_comp_cnn_test/epoch_19'
 #prun: 'checkpoints/mnist_rot_comp_cnn_test/pmodel_epoch_19'
