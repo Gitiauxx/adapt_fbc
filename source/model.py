@@ -273,4 +273,4 @@ class Model(object):
             act = mask.sum(1).mean(0)
             active_bits += act.detach() * len(x) / len(data_loader.dataset)
 
-        return rec_loss.cpu(), accuracy.cpu(), s_loss.cpu(), entr_loss.cpu(), active_bits.cpu()
+        return rec_loss.cpu(), accuracy.cpu(), s_loss, entr_loss.cpu(), active_bits.cpu()
