@@ -110,7 +110,8 @@ class CNNGated(TemplateModel):
         nearest neighbor to 0 or 1
         :return:
         """
-        z = (z + 1) / 2
+        #z = (z + 1) / 2
+
         code = self.code
         code_idx = torch.arange(self.code.shape[0], device=code.device)
         code = code[None, None, None, None, :]
@@ -128,7 +129,7 @@ class CNNGated(TemplateModel):
         q = (z_hard - z_soft).detach() + z_soft
         c = (centers - centers_soft).detach() + centers_soft
 
-        return q, c, center_code.mean(dim=[0, 1, 2, 3])
+        return z_hard, c, centers
 
     def compute_gate(self, z, beta):
         """
@@ -163,10 +164,11 @@ class CNNGated(TemplateModel):
         q, centers, code = self.quantize(z)
         #
         b_with_s = torch.cat([b, s], -1)
-        out = self.decode(z, b_with_s)
+        out = self.decode(q, b_with_s)
 
         q = q.reshape(q.shape[0], self.zk, self.k)
         centers = centers.reshape(q.shape[0], self.zk, self.k)
+        z = z.reshape(q.shape[0], self.zk, self.k)
 
         #q = mask.reshape(-1, self.zk, self.k)
         #centers = q
