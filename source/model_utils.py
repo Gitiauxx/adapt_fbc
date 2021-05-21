@@ -189,7 +189,7 @@ class ResidualBlock(nn.Module):
         if self.should_apply_shortcut: residual = self.shortcut(x)
         x = self.blocks(x)
         x = residual + 0.1 * x
-        x = self.activate(x)
+        #x = self.activate(x)
         return x
 
     @property
@@ -276,7 +276,7 @@ class ResNetDecCondBlock(ResNetDecBlock):
 
         z, beta = self.blocks((z, beta))
         z = residual + 0.1 * z
-        z = self.activate(z)
+        #z = self.activate(z)
 
         return z, beta
 
