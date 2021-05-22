@@ -134,7 +134,7 @@ class Model(object):
         self.optimizer_pmodel.zero_grad()
 
         beta = self.beta * torch.rand_like(s[:, 0])
-        output, q, mask, centers, z = self.net.forward(x, s, beta)
+        output, q, mask, centers, commit_loss = self.net.forward(x, s, beta)
 
         logits = self.pmodel.forward(q)
 
@@ -143,10 +143,7 @@ class Model(object):
         ploss = self.ploss.forward(centers, logits)
         ploss = ploss.reshape(x.shape[0], -1) * mask
 
-        commit_loss = torch.sum((z - q.detach()) ** 2, dim=[1, 2]).mean()
-        code_loss = torch.sum((z.detach() - q) ** 2, dim=[1, 2]).mean()
-
-        loss = loss + self.gamma * (beta * ploss.sum(dim=[1])).mean(0) + commit_loss + code_loss
+        loss = loss + self.gamma * (beta * ploss.sum(dim=[1])).mean(0) + 0.25 * commit_loss
 
         if autoencoder:
             loss.backward()

@@ -11,7 +11,7 @@ data:
 batch_size: 256
 
 net:
-  name: 'CNNGated'
+  name: 'CNNQuant'
   zk: 16
   k: 16
   sdim: 2
@@ -23,12 +23,11 @@ net:
     - 64
     - 128
     - 128
-    - 64
+    - 256
   learning_rate: 0.0004
-  sigma: 1.0
   ncode: 512
   cout: 100
-  embed_dim: 8
+  embed_dim: 64
 
 pmodel:
   name: 'PixelCNN'
