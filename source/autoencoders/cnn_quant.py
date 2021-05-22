@@ -49,7 +49,6 @@ class CNNQuant(TemplateModel):
 
         self.embed_dim = embed_dim
         self.dim = dim
-        self.code = nn.Parameter(torch.arange(ncode, dtype=float, requires_grad=True).float() / (ncode - 1))
         self.param_init()
 
     def param_init(self):
