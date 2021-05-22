@@ -45,6 +45,8 @@ class CNNQuant(TemplateModel):
         self.k = int(np.sqrt(ichan[-1])) * embed_dim
         self.zk = int(np.sqrt(ichan[-1])) * embed_dim
 
+        self.quantize_deconv = nn.Conv2d(embed_dim, ichan[-1], 1)
+
         self.embed_dim = embed_dim
         self.code = nn.Parameter(torch.arange(ncode, dtype=float, requires_grad=True).float() / (ncode - 1))
         self.param_init()
@@ -123,7 +125,8 @@ class CNNQuant(TemplateModel):
         quant = quant.permute(0, 3, 1, 2)
 
         b_with_s = torch.cat([b, s], -1)
-        out = self.decode(quant, b_with_s)
+        quant_expanded = self.quantize_deconv(quant)
+        out = self.decode(quant_expanded, b_with_s)
 
         q = quant.reshape(quant.shape[0], self.zk, self.k)
         centers = centers.reshape(centers.shape[0], self.zk, self.k)
