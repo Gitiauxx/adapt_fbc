@@ -222,7 +222,7 @@ class Model(object):
 
                 torch.save(pmodel_dict, f'{chkpt_dir}/pmodel_epoch_{epoch}')
 
-                code = self.net.code.detach().cpu().numpy()
+                code = self.net.quantize.embed.detach().cpu().numpy()
                 np.save(f'{chkpt_dir}/code_epoch_{epoch}.npy', code)
 
     def eval(self, data_loader, beta):
