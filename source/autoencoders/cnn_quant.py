@@ -39,13 +39,11 @@ class CNNQuant(TemplateModel):
         else:
             self.image = nn.Conv2d(ichan[1], ichan[0], kernel_size=3, stride=1, padding=1)
 
-        self.quantize_conv = nn.Conv2d(ichan[-1], embed_dim)
+        self.quantize_conv = nn.Conv2d(ichan[-1], embed_dim, 1)
         self.quantize = Quantize(embed_dim, ncode)
 
         self.k = int(np.sqrt(ichan[-1])) * embed_dim
         self.zk = int(np.sqrt(ichan[-1])) * embed_dim
-
-        self.quantize = Quantize
 
         self.embed_dim = embed_dim
         self.code = nn.Parameter(torch.arange(ncode, dtype=float, requires_grad=True).float() / (ncode - 1))
