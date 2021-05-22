@@ -12,7 +12,7 @@ class CNNQuant(TemplateModel):
     """
 
     def __init__(self, ichan=[1, 64, 128, 256, 256], kernel=3, embed_dim=4,
-                 zk=8, k=8, sdim=2, cout=None, ncode=2):
+                 zk=8, k=8, sdim=2, cout=None, ncode=2, dim=8):
 
         super().__init__()
 
@@ -42,8 +42,8 @@ class CNNQuant(TemplateModel):
         self.quantize_conv = nn.Conv2d(ichan[-1], embed_dim, 1)
         self.quantize = Quantize(embed_dim, ncode)
 
-        self.k = int(np.sqrt(ichan[-1])) * embed_dim
-        self.zk = int(np.sqrt(ichan[-1])) * embed_dim
+        self.k = dim * int(np.sqrt(embed_dim))
+        self.zk = dim * int(np.sqrt(embed_dim))
 
         self.quantize_deconv = nn.Conv2d(embed_dim, ichan[-1], 1)
 
