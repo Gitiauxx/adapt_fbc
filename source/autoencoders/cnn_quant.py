@@ -119,7 +119,7 @@ class CNNQuant(TemplateModel):
         z = self.encode(x)
         b = beta.unsqueeze(1)
 
-        mask = torch.zeros((z.shape[0], self.dim  self.dim)).to(x.device)
+        mask = torch.zeros((z.shape[0], self.dim * self.dim)).to(x.device)
 
         quant = self.quantize_conv(z).permute(0, 2, 3, 1)
         quant, centers, commit_diff = self.quantize(quant)
