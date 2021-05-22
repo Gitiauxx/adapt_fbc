@@ -38,10 +38,10 @@ class MaskedCNN(nn.Conv2d):
 
 class PixelCNN(TemplateModel):
 
-    def __init__(self, kernel=7, channels=24, ncode=10, residual=None, depth=2):
+    def __init__(self, kernel=7, channels_in=64, channels=24, ncode=10, residual=None, depth=2):
         super().__init__()
 
-        self.conv1 = nn.Sequential(MaskedCNN('A', 1, channels, kernel, 1, kernel // 2, bias=True),
+        self.conv1 = nn.Sequential(MaskedCNN('A', channels_in, channels, kernel, 1, kernel // 2, bias=True),
                                    nn.ELU())
 
         model_list = []
