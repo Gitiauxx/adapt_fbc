@@ -48,6 +48,7 @@ class CNNQuant(TemplateModel):
         self.quantize_deconv = nn.Conv2d(embed_dim, ichan[-1], 1)
 
         self.embed_dim = embed_dim
+        self.dim = dim
         self.code = nn.Parameter(torch.arange(ncode, dtype=float, requires_grad=True).float() / (ncode - 1))
         self.param_init()
 
@@ -128,10 +129,10 @@ class CNNQuant(TemplateModel):
         quant_expanded = self.quantize_deconv(quant)
         out = self.decode(quant_expanded, b_with_s)
 
-        q = quant.reshape(quant.shape[0], self.zk, self.k)
-        centers = centers.reshape(centers.shape[0], self.zk, self.k)
+        #q = quant.reshape(quant.shape[0], self.zk, self.k)
+        #centers = centers.reshape(centers.shape[0], self.dim, self.dim)
 
-        return out, q, mask, centers, commit_diff
+        return out, quant, mask, centers, commit_diff
 
 
 
