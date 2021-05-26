@@ -21,7 +21,7 @@ net:
     - 64
     - 128
     - 256
-  learning_rate: 0.0004
+  learning_rate: 0.0001
   ncode: 512
   cout: 3
   dim: 8
