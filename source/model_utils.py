@@ -350,8 +350,7 @@ class Quantize(nn.Module):
         diff = (quantize.detach() - input).pow(2)
         diff = diff.view(*input.shape)
         diff = diff.mean()
-        quantize = input \
-                   #+ (quantize - input).detach()
+        quantize = input + (quantize - input).detach()
 
         return quantize, embed_ind, diff
 
