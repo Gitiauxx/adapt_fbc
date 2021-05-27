@@ -333,7 +333,7 @@ class Quantize(nn.Module):
         embed_ind = embed_ind.view(*input.shape[:-1])
         quantize = self.embed_code(embed_ind)
 
-        quant = torch.sum(nn.Softmax(dim=-1)(- dist) * self.embed.unsqueeze(0), dim=-1)
+        quant = nn.Softmax(dim=-1)(- dist) @ self.embed.permute(1, 0)
         quant = quant.view(*input.shape)
 
         # if self.training:
