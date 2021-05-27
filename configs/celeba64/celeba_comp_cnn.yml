@@ -23,7 +23,7 @@ net:
     - 256
   learning_rate: 0.0001
   ncode: 512
-  cout: 3
+  cout: 100
   dim: 8
   embed_dim: 64
 
@@ -38,8 +38,7 @@ pmodel:
   residual: 0.1
 
 loss:
-  name: 'L2Loss'
-  #'DiscMixLogisticLoss'
+  name: 'DiscMixLogisticLoss'
 
 ploss:
   name: 'CECondLoss'
