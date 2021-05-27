@@ -315,7 +315,7 @@ class Quantize(nn.Module):
         self.decay = decay
         self.eps = eps
 
-        embed = 2 * torch.rand(dim, n_embed) - 1
+        embed = nn.Parameter(2 * torch.rand(dim, n_embed) - 1, requires_grad=True)
         self.register_buffer("embed", embed)
         self.register_buffer("cluster_size", torch.ones(n_embed))
         self.register_buffer("embed_avg", embed.clone())
@@ -328,31 +328,34 @@ class Quantize(nn.Module):
             + self.embed.pow(2).sum(0, keepdim=True)
         )
         _, embed_ind = (-dist).max(1)
-        embed_onehot = torch.nn.functional.one_hot(embed_ind, self.n_embed).type(flatten.dtype)
+        #embed_onehot = torch.nn.functional.one_hot(embed_ind, self.n_embed).type(flatten.dtype)
         embed_ind = embed_ind.view(*input.shape[:-1])
         quantize = self.embed_code(embed_ind)
 
-        if self.training:
-            embed_onehot_sum = embed_onehot.sum(0)
-            embed_sum = flatten.transpose(0, 1) @ embed_onehot
-
-            self.cluster_size.data.mul_(self.decay).add_(
-                embed_onehot_sum, alpha=1 - self.decay
-            )
-            self.embed_avg.data.mul_(self.decay).add_(embed_sum, alpha=1 - self.decay)
-            n = self.cluster_size.sum()
-            cluster_size = (
-                (self.cluster_size + self.eps) / (n + self.n_embed * self.eps) * n
-            )
-            embed_normalized = self.embed_avg / cluster_size.unsqueeze(0)
-            self.embed.data.copy_(embed_normalized)
+        # if self.training:
+        #     embed_onehot_sum = embed_onehot.sum(0)
+        #     embed_sum = flatten.transpose(0, 1) @ embed_onehot
+        #
+        #     self.cluster_size.data.mul_(self.decay).add_(
+        #         embed_onehot_sum, alpha=1 - self.decay
+        #     )
+        #     self.embed_avg.data.mul_(self.decay).add_(embed_sum, alpha=1 - self.decay)
+        #     n = self.cluster_size.sum()
+        #     cluster_size = (
+        #         (self.cluster_size + self.eps) / (n + self.n_embed * self.eps) * n
+        #     )
+        #     embed_normalized = self.embed_avg / cluster_size.unsqueeze(0)
+        #     self.embed.data.copy_(embed_normalized)
 
         diff = (quantize.detach() - input).pow(2)
         diff = diff.view(*input.shape)
         diff = diff.mean()
         quantize = input + (quantize - input).detach()
 
-        return quantize, embed_ind, diff
+        embed_loss = (quantize - input.detach()).pow(2)
+        embed_loss = embed_loss.mean()
+
+        return quantize, embed_ind, diff, embed_loss
 
     def embed_code(self, embed_id):
         return torch.nn.functional.embedding(embed_id, self.embed.transpose(0, 1))

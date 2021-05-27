@@ -121,7 +121,7 @@ class CNNQuant(TemplateModel):
         mask = torch.zeros((z.shape[0], self.dim * self.dim)).to(x.device)
 
         quant = self.quantize_conv(z).permute(0, 2, 3, 1)
-        quant, centers, commit_diff = self.quantize(quant)
+        quant, centers, commit_diff, embed_loss = self.quantize(quant)
         quant = quant.permute(0, 3, 1, 2)
 
         b_with_s = torch.cat([b, s], -1)
@@ -131,7 +131,7 @@ class CNNQuant(TemplateModel):
         #q = quant.reshape(quant.shape[0], self.zk, self.k)
         #centers = centers.reshape(centers.shape[0], self.dim, self.dim)
 
-        return out, quant, mask, centers, commit_diff
+        return out, quant, mask, centers, commit_diff, embed_loss
 
 
 
