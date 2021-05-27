@@ -328,9 +328,12 @@ class Quantize(nn.Module):
             + self.embed.pow(2).sum(0, keepdim=True)
         )
         _, embed_ind = (-dist).max(1)
+
         #embed_onehot = torch.nn.functional.one_hot(embed_ind, self.n_embed).type(flatten.dtype)
         embed_ind = embed_ind.view(*input.shape[:-1])
         quantize = self.embed_code(embed_ind)
+
+        quant = torch.sum(nn.Softmax(dim=-1)(- dist) * self.embed, dim=-1)
 
         # if self.training:
         #     embed_onehot_sum = embed_onehot.sum(0)
@@ -350,7 +353,7 @@ class Quantize(nn.Module):
         diff = (quantize.detach() - input).pow(2)
         diff = diff.view(*input.shape)
         diff = diff.mean()
-        quantize = input + (quantize - input).detach()
+        quantize = quant + (quantize - quant).detach()
 
         embed_loss = (quantize - input.detach()).pow(2)
         embed_loss = embed_loss.mean()
