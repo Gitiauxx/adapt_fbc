@@ -3,7 +3,7 @@ import numpy as np
 import torch.nn as nn
 
 from source.template_model import TemplateModel
-from source.model_utils import activations, _to_one_hot, ResNetBasicBlock, ResNetDecCondBlock, CondFC, Conv2d
+from source.model_utils import activations, _to_one_hot, ResNetBasicBlock, ResNetDecCondBlock, CondFC, Quantize
 
 class CNNGated(TemplateModel):
     """
@@ -55,10 +55,14 @@ class CNNGated(TemplateModel):
         else:
             self.image = nn.Conv2d(ichan[1], ichan[0], kernel_size=3, stride=1, padding=1)
 
-
+        self.quantize_conv = nn.Conv2d(ichan[-1], embed_dim)
+        self.quantize = Quantize(embed_dim, ncode)
 
         self.k = int(np.sqrt(ichan[-1])) * embed_dim
         self.zk = int(np.sqrt(ichan[-1])) * embed_dim
+
+        self.quantize = Quantize
+
         self.sigma = sigma
         self.embed_dim = embed_dim
         self.code = nn.Parameter(torch.arange(ncode, dtype=float, requires_grad=True).float() / (ncode - 1))
@@ -111,7 +115,6 @@ class CNNGated(TemplateModel):
         :return:
         """
         #z = (z + 1) / 2
-
         code = self.code
         code_idx = torch.arange(self.code.shape[0], device=code.device)
         code = code[None, None, None, None, :]
@@ -129,7 +132,7 @@ class CNNGated(TemplateModel):
         q = (z_hard - z_soft).detach() + z_soft
         c = (centers - centers_soft).detach() + centers_soft
 
-        return z_hard, c, centers
+        return q, c, center_code.mean(dim=[0, 1, 2, 3])
 
     def compute_gate(self, z, beta):
         """

@@ -315,7 +315,7 @@ class Quantize(nn.Module):
         self.decay = decay
         self.eps = eps
 
-        embed = nn.Parameter(2 * torch.rand(dim, n_embed) - 1, requires_grad=True)
+        embed = nn.Parameter(torch.randn(dim, n_embed), requires_grad=True)
         self.register_buffer("embed", embed)
         self.register_buffer("cluster_size", torch.ones(n_embed))
         self.register_buffer("embed_avg", embed.clone())

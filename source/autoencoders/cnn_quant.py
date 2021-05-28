@@ -39,7 +39,7 @@ class CNNQuant(TemplateModel):
         else:
             self.image = nn.Conv2d(ichan[1], ichan[0], kernel_size=3, stride=1, padding=1)
 
-        self.quantize_conv = nn.Sequential(nn.Conv2d(ichan[-1], embed_dim, 1), nn.Tanh())
+        self.quantize_conv = nn.Sequential(nn.Conv2d(ichan[-1], embed_dim, 1))
         self.quantize = Quantize(embed_dim, ncode)
 
         self.k = dim * int(np.sqrt(embed_dim))
