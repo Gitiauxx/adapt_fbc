@@ -307,7 +307,7 @@ class ActivationRec(nn.Module):
 
 
 class Quantize(nn.Module):
-    def __init__(self, dim, n_embed, decay=0.99, eps=1e-5):
+    def __init__(self, dim, n_embed, decay=0.8, eps=1e-5):
         super().__init__()
 
         self.dim = dim
@@ -317,7 +317,7 @@ class Quantize(nn.Module):
 
         embed = torch.randn(dim, n_embed)
         self.register_buffer("embed", embed)
-        self.register_buffer("cluster_size", torch.ones(n_embed))
+        self.register_buffer("cluster_size", torch.zeros(n_embed))
         self.register_buffer("embed_avg", embed.clone())
 
     def forward(self, input):
