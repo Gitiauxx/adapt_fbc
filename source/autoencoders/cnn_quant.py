@@ -113,7 +113,7 @@ class CNNQuant(TemplateModel):
 
         return mask_soft
 
-    def forward(self, x, s, beta):
+    def forward(self, x, s, beta, training=True):
 
         z = self.encode(x)
         b = beta.unsqueeze(1)
@@ -121,7 +121,7 @@ class CNNQuant(TemplateModel):
         mask = torch.zeros((z.shape[0], self.dim * self.dim)).to(x.device)
 
         quant = self.quantize_conv(z).permute(0, 2, 3, 1)
-        quant, centers, commit_diff, embed_loss = self.quantize(quant)
+        quant, centers, commit_diff, embed_loss = self.quantize(quant, training=training)
         quant = quant.permute(0, 3, 1, 2)
 
         b_with_s = torch.cat([b, s], -1)

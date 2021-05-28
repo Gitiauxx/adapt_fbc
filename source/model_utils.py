@@ -320,7 +320,7 @@ class Quantize(nn.Module):
         self.register_buffer("cluster_size", torch.zeros(n_embed))
         self.register_buffer("embed_avg", embed.clone())
 
-    def forward(self, input):
+    def forward(self, input, training=True):
         flatten = input.reshape(-1, self.dim)
         dist = (
             flatten.pow(2).sum(1, keepdim=True)
@@ -336,7 +336,7 @@ class Quantize(nn.Module):
         quant = nn.Softmax(dim=-1)(- dist) @ self.embed.permute(1, 0)
         quant = quant.view(*input.shape)
 
-        if self.training:
+        if training:
             embed_onehot_sum = embed_onehot.sum(0)
             embed_sum = flatten.transpose(0, 1) @ embed_onehot
 

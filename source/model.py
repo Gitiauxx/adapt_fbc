@@ -238,7 +238,7 @@ class Model(object):
         entr_loss = 0
         active_bits = 0
 
-        self.net.eval()
+        #self.net.eval()
 
         beta = torch.tensor([beta])
 
@@ -248,7 +248,7 @@ class Model(object):
             y = batch['target'].to(self.device)
 
             b = beta.expand_as(s[:, 0]).to(self.device)
-            out, q, mask, centers, z, _ = self.net.forward(x, s, b)
+            out, q, mask, centers, z, _ = self.net.forward(x, s, b, training=False)
 
             q = q.detach()
             out = out.detach()
