@@ -21,7 +21,7 @@ net:
     - 64
     - 128
     - 256
-  learning_rate: 0.0004
+  learning_rate: 0.0001
   ncode: 512
   cout: 3
   dim: 8
@@ -53,5 +53,5 @@ annealing_epochs: 400
 warmup_epochs: 10
 lr_min: 0.00004
 
-#run: 'checkpoints/mnist_rot_comp_cnn_test/epoch_19'
-#prun: 'checkpoints/mnist_rot_comp_cnn_test/pmodel_epoch_19'
+run: '/scratch/xgitiaux/afbc/checkpoints/celeba_comp_test/epoch_399'
+prun: '/scratch/xgitiaux/afbc/checkpoints/celeba_comp_test/epoch_399'
