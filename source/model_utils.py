@@ -307,7 +307,7 @@ class ActivationRec(nn.Module):
 
 
 class Quantize(nn.Module):
-    def __init__(self, dim, n_embed, decay=0.8, eps=1e-5):
+    def __init__(self, dim, n_embed, decay=0.99, eps=1e-5):
         super().__init__()
 
         self.dim = dim
