@@ -359,7 +359,7 @@ class Quantize(nn.Module):
         embed_loss = (quantize - input.detach()).pow(2)
         embed_loss = embed_loss.mean()
 
-        return input, embed_ind, diff, embed_loss
+        return quantize, embed_ind, diff, embed_loss
 
     def embed_code(self, embed_id):
         return torch.nn.functional.embedding(embed_id, self.embed.transpose(0, 1))
