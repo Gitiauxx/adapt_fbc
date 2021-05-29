@@ -315,10 +315,10 @@ class Quantize(nn.Module):
         self.decay = decay
         self.eps = eps
 
-        embed = nn.Parameter(torch.randn(dim, n_embed), requires_grad=True)
-        self.register_buffer("embed", embed)
+        self.embed = nn.Parameter(torch.randn(dim, n_embed), requires_grad=True)
+        #self.register_buffer("embed", embed)
         self.register_buffer("cluster_size", torch.zeros(n_embed))
-        self.register_buffer("embed_avg", embed.clone())
+        self.register_buffer("embed_avg", self.embed.clone())
 
     def forward(self, input, training=True):
         flatten = input.reshape(-1, self.dim)
