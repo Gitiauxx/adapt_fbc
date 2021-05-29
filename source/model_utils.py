@@ -333,7 +333,7 @@ class Quantize(nn.Module):
         embed_ind = embed_ind.view(*input.shape[:-1])
         quantize = self.embed_code(embed_ind)
 
-        quant = nn.Softmax(dim=-1)(- dist) @ self.embed.permute(1, 0)
+        quant = nn.Softmax(dim=-1)(- 10 * dist) @ self.embed.permute(1, 0)
         quant = quant.view(*input.shape)
 
         # if training:
