@@ -315,8 +315,8 @@ class Quantize(nn.Module):
         self.decay = decay
         self.eps = eps
 
-        embed = torch.randn(dim, n_embed)
-        self.register_buffer("embed", embed)
+        self.embed = nn.Parameter(torch.randn(dim, n_embed), requires_grad=True)
+        #self.register_buffer("embed", embed)
         self.register_buffer("cluster_size", torch.zeros(n_embed))
         self.register_buffer("embed_avg", self.embed.clone())
 
@@ -333,28 +333,28 @@ class Quantize(nn.Module):
         embed_ind = embed_ind.view(*input.shape[:-1])
         quantize = self.embed_code(embed_ind)
 
-        quant = nn.Softmax(dim=-1)(- 0.5 * dist) @ self.embed.permute(1, 0)
-        quant = quant.view(*input.shape)
+        # quant = nn.Softmax(dim=-1)(- 0.5 * dist) @ self.embed.permute(1, 0)
+        # quant = quant.view(*input.shape)
 
-        if training:
-            embed_onehot_sum = embed_onehot.sum(0)
-            embed_sum = flatten.transpose(0, 1) @ embed_onehot
-
-            self.cluster_size.data.mul_(self.decay).add_(
-                embed_onehot_sum, alpha=1 - self.decay
-            )
-            self.embed_avg.data.mul_(self.decay).add_(embed_sum, alpha=1 - self.decay)
-            n = self.cluster_size.sum()
-            cluster_size = (
-                (self.cluster_size + self.eps) / (n + self.n_embed * self.eps) * n
-            )
-            embed_normalized = self.embed_avg / cluster_size.unsqueeze(0)
-            self.embed.data.copy_(embed_normalized)
+        # if training:
+        #     embed_onehot_sum = embed_onehot.sum(0)
+        #     embed_sum = flatten.transpose(0, 1) @ embed_onehot
+        #
+        #     self.cluster_size.data.mul_(self.decay).add_(
+        #         embed_onehot_sum, alpha=1 - self.decay
+        #     )
+        #     self.embed_avg.data.mul_(self.decay).add_(embed_sum, alpha=1 - self.decay)
+        #     n = self.cluster_size.sum()
+        #     cluster_size = (
+        #         (self.cluster_size + self.eps) / (n + self.n_embed * self.eps) * n
+        #     )
+        #     embed_normalized = self.embed_avg / cluster_size.unsqueeze(0)
+        #     self.embed.data.copy_(embed_normalized)
 
         diff = (quantize.detach() - input).pow(2)
         diff = diff.view(*input.shape)
         diff = diff.mean()
-        quantize = quant + (quantize - quant).detach()
+        quantize = input + (quantize - input).detach()
 
         embed_loss = (quantize - input.detach()).pow(2)
         embed_loss = embed_loss.mean()
