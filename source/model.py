@@ -206,7 +206,7 @@ class Model(object):
                     logger.info(f'Epoch: {epoch} Beta {beta}: Differences of Q by S: {s_loss}')
                     logger.info(f'Epoch: {epoch} Beta {beta}: Max values code: {self.net.quantize.embed.max()}, '
                                 f'{self.net.quantize.embed.min()}')
-                    logger.info(f'Epoch: {epoch} Beta {beta}: Number of points per code: {self.net.quantize.cluster_size}}')
+                    logger.info(f'Epoch: {epoch} Beta {beta}: Number of points per code: {self.net.quantize.cluster_size}')
 
 
             if (save) & ((epoch % 10 == 0) | (epoch == n_epochs - 1)):
