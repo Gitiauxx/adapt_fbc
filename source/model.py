@@ -143,7 +143,7 @@ class Model(object):
         # ploss = self.ploss.forward(centers, logits)
         # ploss = ploss.reshape(x.shape[0], -1) * mask
 
-        loss = loss +  0.25 * commit_loss.mean() \
+        loss = loss +  0.0 * commit_loss.mean() \
                #+ 1.0 * embed_loss.mean()  + self.gamma * (beta * ploss.sum(dim=[1])).mean(0) +
 
         if autoencoder:
