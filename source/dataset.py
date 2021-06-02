@@ -125,18 +125,21 @@ class CropCelebA64(object):
     def __repr__(self):
         return self.__class__.__name__ + '()'
 
-class CelebA64(Dataset):
+class CelebA(Dataset):
     """
     Dataset class with len and get methods
     The dataset is initialized by a path to an index file and
     is represented by a index table
     """
 
-    def __init__(self, indexpath, range_data=None, transform=None):
+    def __init__(self, indexpath, range_data=None, resize=True):
         self.indextable = pd.read_csv(os.path.join(indexpath, 'index.csv'))
         self.indextable.set_index(np.arange(len(self.indextable)), inplace=True)
         self.indextable['file'] = self.indextable.file.apply(lambda file: os.path.join(indexpath, file))
-        self.transform = tf.Compose([tf.Resize(64), tf.ToTensor()])
+        if resize:
+            self.transform = tf.Compose([tf.Resize(64), tf.ToTensor()])
+        else:
+            self.transform = tf.Compose([tf.ToTensor()])
 
         if range_data is not None:
             range_data = min(len(self.indextable), range_data)
