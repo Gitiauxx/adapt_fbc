@@ -95,7 +95,7 @@ def main(args):
         ]
     )
 
-    dataset = datasets.CelebA(args.path, transform=transform, download=True)
+    dataset = datasets.CelebA(args.path, transform=transform)
     #sampler = dist.data_sampler(dataset, shuffle=True, distributed=args.distributed)
     loader = DataLoader(
         dataset, batch_size=128 // args.n_gpu)
