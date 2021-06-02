@@ -7,7 +7,7 @@ data:
   name: 'CelebA'
   seed: 0
   resize: False
-  range_data: 40000
+  #range_data: 40000
 
 batch_size: 64
 
