@@ -12,7 +12,7 @@
 #SBATCH --mem=12G
 #SBATCH --cpus-per-gpu=8
 #SBATCH --qos=csqos
-#SBATCH --gres=gpu:4
+#SBATCH --gres=gpu:1
 
 module load python/3.8.4
 module load cuda/10.2
