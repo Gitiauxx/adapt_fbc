@@ -8,25 +8,27 @@ data:
   seed: 0
   range_data: 40000
 
-batch_size: 256
+batch_size: 64
 
 net:
-  name: 'CNNQuant'
-  zk: 16
-  k: 16
-  sdim: 2
-  ichan:
-    - 3
-    - 32
-    - 64
-    - 128
-    - 256
-    - 256
-  learning_rate: 0.0001
-  ncode: 100
-  cout: 3
-  dim: 8
-  embed_dim: 64
+  name: 'VQVAE'
+  learning_rate: 0.0004
+#  zk: 16
+#  k: 16
+#  sdim: 2
+#  ichan:
+#    - 3
+#    - 32
+#    - 64
+#    - 128
+#    - 256
+#    - 256
+#    - 256
+#  learning_rate: 0.0004
+#  ncode: 100
+#  cout: 3
+#  dim: 8
+#  embed_dim: 64
 
 pmodel:
   name: 'PixelCNN'

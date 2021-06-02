@@ -134,29 +134,30 @@ class Model(object):
         self.optimizer_pmodel.zero_grad()
 
         beta = self.beta * torch.rand_like(s[:, 0])
-        output, q, mask, centers, commit_loss, embed_loss = self.net.forward(x, s, beta)
+        output, q, commit_loss = self.net.forward(x, s, beta)
 
         logits = self.pmodel.forward(q)
 
         loss = self.loss.forward(y, output)
 
-        ploss = self.ploss.forward(centers, logits)
-        ploss = ploss.reshape(x.shape[0], -1) * mask
+        # ploss = self.ploss.forward(centers, logits)
+        # ploss = ploss.reshape(x.shape[0], -1) * mask
 
-        loss = loss + self.gamma * (beta * ploss.sum(dim=[1])).mean(0) + 0.25 * commit_loss.mean() + 1.0 * embed_loss.mean()
+        loss = loss +  0.25 * commit_loss.mean() \
+               #+ 1.0 * embed_loss.mean()  + self.gamma * (beta * ploss.sum(dim=[1])).mean(0) +
 
         if autoencoder:
             loss.backward()
             self.optimizer.step()
 
-        q = q.detach()
-        centers = centers.detach()
-        logits = self.pmodel.forward(q)
-        ploss = self.ploss.forward(centers, logits)
-        ploss_mean = ploss.sum(dim=[1, 2]).mean(0)
-
-        ploss_mean.backward()
-        self.optimizer_pmodel.step()
+        # q = q.detach()
+        # centers = centers.detach()
+        # logits = self.pmodel.forward(q)
+        # ploss = self.ploss.forward(centers, logits)
+        # ploss_mean = ploss.sum(dim=[1, 2]).mean(0)
+        #
+        # ploss_mean.backward()
+        # self.optimizer_pmodel.step()
 
         return loss
 
@@ -248,30 +249,30 @@ class Model(object):
             y = batch['target'].to(self.device)
 
             b = beta.expand_as(s[:, 0]).to(self.device)
-            out, q, mask, centers, z, _ = self.net.forward(x, s, b, training=False)
+            out, q, _ = self.net.forward(x, s, b, training=False)
 
             q = q.detach()
             out = out.detach()
-            mask = mask.detach()
-            z = z.detach()
+            #mask = mask.detach()
+            #z = z.detach()
 
             loss = self.loss.forward(y, out)
             rec_loss += loss.detach() * len(x) / len(data_loader.dataset)
 
-            logits = self.pmodel.forward(q)
-            pred = logits.argmax(1)
-            acc = (pred == centers).float().mean()
-            accuracy += acc.detach() * len(x) / len(data_loader.dataset)
+            # logits = self.pmodel.forward(q)
+            # pred = logits.argmax(1)
+            # acc = (pred == centers).float().mean()
+            # accuracy += acc.detach() * len(x) / len(data_loader.dataset)
 
             # bs = b[:, None, ...] * mask[:, None, ...]
             # se = s[:, :, None]
             # b_loss = torch.abs((bs * se).sum(0) / se.sum(0) - bs.mean(0)).sum(dim=[1, 0])
             # s_loss += b_loss.cpu().detach() * len(x) / len(data_loader.dataset)
 
-            ploss = self.ploss.forward(centers, logits)
-            entr_loss += ploss.sum(dim=[1, 2]).mean().detach() * len(x) / len(data_loader.dataset)
-
-            act = mask.sum(1).mean(0)
-            active_bits += act.detach() * len(x) / len(data_loader.dataset)
+            # ploss = self.ploss.forward(centers, logits)
+            # entr_loss += ploss.sum(dim=[1, 2]).mean().detach() * len(x) / len(data_loader.dataset)
+            #
+            # act = mask.sum(1).mean(0)
+            # active_bits += act.detach() * len(x) / len(data_loader.dataset)
 
         return rec_loss.cpu(), accuracy.cpu(), s_loss, entr_loss.cpu(), active_bits.cpu()
