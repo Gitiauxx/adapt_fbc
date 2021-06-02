@@ -136,7 +136,7 @@ class Model(object):
         beta = self.beta * torch.rand_like(s[:, 0])
         output, q, commit_loss = self.net.forward(x)
 
-        logits = self.pmodel.forward(q)
+        #logits = self.pmodel.forward(q)
 
         loss = self.loss.forward(y, output)
 
