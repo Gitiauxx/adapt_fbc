@@ -47,9 +47,9 @@ def train(epoch, loader, model, optimizer, scheduler, device):
         comm = {"mse_sum": part_mse_sum, "mse_n": part_mse_n}
         #comm = dist.all_gather(comm)
 
-        for part in comm:
-            mse_sum += part["mse_sum"]
-            mse_n += part["mse_n"]
+        # for part in comm:
+        mse_sum = comm["mse_sum"]
+        mse_n = comm["mse_n"]
 
         #if dist.is_primary():
         lr = optimizer.param_groups[0]["lr"]
