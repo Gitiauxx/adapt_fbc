@@ -134,7 +134,7 @@ class Model(object):
         self.optimizer_pmodel.zero_grad()
 
         beta = self.beta * torch.rand_like(s[:, 0])
-        output, q, commit_loss = self.net.forward(x, s, beta)
+        output, q, commit_loss = self.net.forward(x)
 
         logits = self.pmodel.forward(q)
 
@@ -249,7 +249,7 @@ class Model(object):
             y = batch['target'].to(self.device)
 
             b = beta.expand_as(s[:, 0]).to(self.device)
-            out, q, _ = self.net.forward(x, s, b, training=False)
+            out, q, _ = self.net.forward(x)
 
             q = q.detach()
             out = out.detach()
