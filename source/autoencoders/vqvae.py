@@ -2,6 +2,8 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
+from source.template_model import TemplateModel
+
 
 # Copyright 2018 The Sonnet Authors. All Rights Reserved.
 #
@@ -156,7 +158,7 @@ class Decoder(nn.Module):
         return self.blocks(input)
 
 
-class VQVAE(nn.Module):
+class VQVAE(TemplateModel):
     def __init__(
         self,
         in_channel=3,
