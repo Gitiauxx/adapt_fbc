@@ -255,7 +255,7 @@ class CelebA(Dataset):
         img = Image.open(os.path.join(self.root, self.base_folder, "img_align_celeba", image_id))
         img_data = self.transform(img)
 
-        sensitive = (self.attr[image_id, 'Male'])
+        sensitive = self.attr[image_id, 'Male']
         s = torch.zeros(2)
         if sensitive == 1:
             s[0] = 1
