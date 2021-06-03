@@ -27,7 +27,9 @@ def train(epoch, loader, model, optimizer, scheduler, device):
     mse_sum = 0
     mse_n = 0
 
-    for i, (img, label) in enumerate(loader):
+    for i, data in enumerate(loader):
+        img = data['input']
+
         model.zero_grad()
 
         img = img.to(device)
