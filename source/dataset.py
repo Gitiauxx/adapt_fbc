@@ -1,4 +1,6 @@
 import os
+from functools import partial
+
 import numpy as np
 import pandas as pd
 import torch
@@ -125,7 +127,7 @@ class CropCelebA64(object):
     def __repr__(self):
         return self.__class__.__name__ + '()'
 
-class CelebA(Dataset):
+class CelebA64(Dataset):
     """
     Dataset class with len and get methods
     The dataset is initialized by a path to an index file and
@@ -177,6 +179,89 @@ class CelebA(Dataset):
             s[0] = 1
         else:
             s[1] = 1
+
+        return {'input': img_data, 'target': img_data, 'sensitive': s.float()}
+
+    def __len__(self):
+        """
+        Overload length method for dataset
+        :return: len(self.indextable)
+        """
+        return len(self.indextable)
+
+
+class CelebA(Dataset):
+    """
+    Dataset class with len and get methods
+    The dataset is initialized by a path to an index file and
+    is represented by a index table
+    """
+
+    def __init__(self, root, range_data=None, size=256, split='train'):
+
+        self.base_folder = "celeba"
+        self.root = root
+
+        split_map = {
+            "train": 0,
+            "valid": 1,
+            "test": 2,
+            "all": None,
+        }
+
+        split_ = split_map[split]
+
+        fn = partial(os.path.join, self.root, self.base_folder)
+        splits = pd.read_csv(fn("list_eval_partition.csv"), index_col='image_id')
+        identity = pd.read_csv(fn("identity_CelebA.csv"), index_col='image_id')
+        attr = pd.read_csv(fn("list_attr_celeba.csv"), index_col='image_id')
+
+        mask = slice(None) if split_ is None else (splits['partition'] == split_)
+
+        self.attr = attr
+        self.filename = splits[mask].index.values
+        self.identity = identity
+
+        self.transform = tf.Compose([tf.Resize(size), tf.CenterCrop(size), tf.ToTensor(),
+                                tf.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])]
+                               )
+
+        if range_data is not None:
+            range_data = min(len(self.filename), range_data)
+            index = np.random.choice(len(self.filename), range_data, replace=False)
+            self.filename = self.filename[index]
+
+    @classmethod
+    def from_dict(cls, config_data, type='train'):
+        """
+        Create a dataset from a config dictionary
+        """
+
+        filepath = config_data[type]
+
+        range_data = None
+        if ('range_data' in config_data):
+            range_data = config_data['range_data']
+
+        return cls(filepath, range_data=range_data, split=type)
+
+    def __getitem__(self, idx):
+        """
+        Overload __getitem__ with idx being an index value in self.indextable
+        :param idx:
+        :return: a torch tensor (C, W, H)
+        """
+        image_id = self.filename[idx]
+        img = Image.open(os.path.join(self.root, self.base_folder, "img_align_celeba", image_id))
+        img_data = self.transform(img)
+
+        sensitive = (self.attr[image_id, 'Male'])
+        s = torch.zeros(2)
+        if sensitive == 1:
+            s[0] = 1
+        else:
+            s[1] = 1
+
 
         return {'input': img_data, 'target': img_data, 'sensitive': s.float()}
 

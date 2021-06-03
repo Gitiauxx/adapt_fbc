@@ -19,4 +19,4 @@ module load cuda/10.2
 source ../afbc-env/bin/activate
 
 echo $SLURM_ARRAY_TASK_ID
-../afbc-env/bin/python3 train_vqvae.py --path ../data/
+../afbc-env/bin/python3 train_vqvae.py --path ../data_vae

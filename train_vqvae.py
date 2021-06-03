@@ -6,7 +6,7 @@ import torch
 from torch import nn, optim
 from torch.utils.data import DataLoader
 
-from torchvision import datasets, transforms, utils
+from source.dataset import CelebA
 
 from tqdm import tqdm
 
@@ -86,19 +86,9 @@ def main(args):
 
     #args.distributed = dist.get_world_size() > 1
 
-    transform = transforms.Compose(
-        [
-            transforms.Resize(args.size),
-            transforms.CenterCrop(args.size),
-            transforms.ToTensor(),
-            transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
-        ]
-    )
-
-    dataset = datasets.CelebA(args.path, transform=transform)
+    dataset = CelebA(args.path, split='train')
     #sampler = dist.data_sampler(dataset, shuffle=True, distributed=args.distributed)
-    loader = DataLoader(
-        dataset, batch_size=128 // args.n_gpu)
+    loader = DataLoader(dataset, batch_size=128 // args.n_gpu, shuffle=True)
     #sampler=sampler, num_workers=2
     #)
 
@@ -126,7 +116,8 @@ def main(args):
         train(i, loader, model, optimizer, scheduler, device)
 
         #if dist.is_primary():
-        torch.save(model.state_dict(), f"checkpoint/vqvae_{str(i + 1).zfill(3)}.pt")
+        os.makedirs("/scratch/xgitiaux/checkpoint/vqvae", exist_ok=True)
+        torch.save(model.state_dict(), f"/scratch/xgitiaux/checkpoint/vqvae/vqvae_{str(i + 1).zfill(3)}.pt")
 
 
 if __name__ == "__main__":
