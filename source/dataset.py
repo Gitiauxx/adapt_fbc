@@ -213,7 +213,7 @@ class CelebA(Dataset):
 
         fn = partial(os.path.join, self.root, self.base_folder)
         splits = pd.read_csv(fn("list_eval_partition.csv"), index_col='image_id')
-        identity = pd.read_csv(fn("identity_CelebA.csv"), index_col='image_id')
+        identity = pd.read_csv(fn("identity_celeba.csv"), index_col='image_id')
         attr = pd.read_csv(fn("list_attr_celeba.csv"), index_col='image_id')
 
         mask = slice(None) if split_ is None else (splits['partition'] == split_)
