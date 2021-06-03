@@ -6,13 +6,11 @@ import torch
 from torch import nn, optim
 from torch.utils.data import DataLoader
 
-from source.dataset import CelebA
-
 from tqdm import tqdm
 
+from source.dataset import CelebA
 from source.autoencoders.vqvae import VQVAE
-# from scheduler import CycleScheduler
-# import distributed as dist
+
 
 
 def train(epoch, loader, model, optimizer, scheduler, device):
@@ -22,10 +20,6 @@ def train(epoch, loader, model, optimizer, scheduler, device):
     criterion = nn.MSELoss()
 
     latent_loss_weight = 0.25
-    sample_size = 25
-
-    mse_sum = 0
-    mse_n = 0
 
     for i, data in enumerate(loader):
         img = data['input']
@@ -64,35 +58,47 @@ def train(epoch, loader, model, optimizer, scheduler, device):
                 )
             )
 
-        # if i % 100 == 0:
-        #         model.eval()
-        #
-        #         sample = img[:sample_size]
-        #
-        #         with torch.no_grad():
-        #             out, _ = model(sample)
-        #
-        #         utils.save_image(
-        #             torch.cat([sample, out], 0),
-        #             f"sample/{str(epoch + 1).zfill(5)}_{str(i).zfill(5)}.png",
-        #             nrow=sample_size,
-        #             normalize=True,
-        #             range=(-1, 1),
-        #         )
+def eval(epoch, loader, model, device):
 
-            #model.train()
+    loader = tqdm(loader)
 
+    criterion = nn.MSELoss()
+
+    model.eval()
+
+    for i, data in enumerate(loader):
+        img = data['input']
+        img = img.to(device)
+
+        out, latent_loss = model(img)
+        recon_loss = criterion(out, img)
+        latent_loss = latent_loss.mean()
+
+        part_mse_sum = recon_loss.item() * img.shape[0]
+        part_mse_n = img.shape[0]
+        comm = {"mse_sum": part_mse_sum, "mse_n": part_mse_n}
+
+        mse_sum = comm["mse_sum"]
+        mse_n = comm["mse_n"]
+
+        loader.set_description(
+                (
+                    f"epoch: {epoch + 1}; mse: {recon_loss.item():.5f}; "
+                    f"latent: {latent_loss.item():.3f}; avg mse: {mse_sum / mse_n:.5f}; "
+                )
+            )
+
+    model.train()
 
 def main(args):
     device = "cuda"
 
-    #args.distributed = dist.get_world_size() > 1
 
     dataset = CelebA(args.path, split='train')
-    #sampler = dist.data_sampler(dataset, shuffle=True, distributed=args.distributed)
     loader = DataLoader(dataset, batch_size=128 // args.n_gpu, shuffle=True)
-    #sampler=sampler, num_workers=2
-    #)
+
+    validation_dataset = CelebA(args.path, split='valid')
+    validation_loader = DataLoader(dataset, batch_size=128 // args.n_gpu)
 
     model = VQVAE().to(device)
 
@@ -120,6 +126,8 @@ def main(args):
         #if dist.is_primary():
         os.makedirs("/scratch/xgitiaux/checkpoint/vqvae", exist_ok=True)
         torch.save(model.state_dict(), f"/scratch/xgitiaux/checkpoint/vqvae/vqvae_{str(i + 1).zfill(3)}.pt")
+
+        eval(i, validation_loader, model, device)
 
 
 if __name__ == "__main__":
