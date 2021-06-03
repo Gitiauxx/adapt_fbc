@@ -270,7 +270,7 @@ class CelebA(Dataset):
         Overload length method for dataset
         :return: len(self.indextable)
         """
-        return len(self.indextable)
+        return len(self.filename)
 
 
 class CIFAR10(object):
