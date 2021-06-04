@@ -13,7 +13,7 @@ class DiscMixLogisticLoss(TemplateLoss):
         self.name = 'DiscMixLogisticLoss'
         self.beta = beta
 
-    def forward(self, target, output):
+    def forward(self, output, target):
         """
 
         :param output: reconstructed input (B, M * 6 + M, W, H)
