@@ -117,7 +117,7 @@ def main(args):
 
     model = VQVAE(cout=30).to(device)
 
-    entropy_coder = PixelCNN(ncode=512, channels_in=1)
+    entropy_coder = PixelCNN(ncode=512, channels_in=1).to(devic)
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     scheduler = None
