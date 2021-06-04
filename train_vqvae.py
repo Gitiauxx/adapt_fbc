@@ -19,6 +19,10 @@ def train(epoch, loader, model, optimizer, scheduler, device):
 
     criterion = nn.MSELoss()
 
+    mse_sum = 0
+    mse_n = 0
+
+
     latent_loss_weight = 0.25
 
     for i, data in enumerate(loader):
@@ -44,8 +48,8 @@ def train(epoch, loader, model, optimizer, scheduler, device):
         #comm = dist.all_gather(comm)
 
         # for part in comm:
-        mse_sum = comm["mse_sum"]
-        mse_n = comm["mse_n"]
+        mse_sum += comm["mse_sum"]
+        mse_n = +comm["mse_n"]
 
         #if dist.is_primary():
         lr = optimizer.param_groups[0]["lr"]
