@@ -110,7 +110,7 @@ def main(args):
     validation_dataset = CelebA(args.path, split='valid')
     validation_loader = DataLoader(validation_dataset, batch_size=128 // args.n_gpu)
 
-    model = VQVAE(in_channel=100).to(device)
+    model = VQVAE(cout=100).to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     scheduler = None
