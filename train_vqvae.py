@@ -49,7 +49,7 @@ def train(epoch, loader, model, optimizer, scheduler, device):
 
         # for part in comm:
         mse_sum += comm["mse_sum"]
-        mse_n = +comm["mse_n"]
+        mse_n +=comm["mse_n"]
 
         #if dist.is_primary():
         lr = optimizer.param_groups[0]["lr"]
