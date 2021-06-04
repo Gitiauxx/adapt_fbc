@@ -43,7 +43,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder):
         loss = recon_loss + latent_loss_weight * latent_loss
         loss.backward()
 
-        logits = entropy_coder(id_t)
+        logits = entropy_coder(id_t.float())
         prior_loss = ent_loss(logits, id_t)
 
         if scheduler is not None:
@@ -67,7 +67,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder):
                     f"epoch: {epoch + 1}; mse: {recon_loss.item():.5f}; "
                     f"latent: {latent_loss.item():.3f}; avg mse: {mse_sum / mse_n:.5f}; "
                     f"lr: {lr:.5f}"
-                    f" prior loss: {ent_loss.item(): .3f}"
+                    f" prior loss: {prior_loss.item(): .3f}"
                 )
             )
 
