@@ -15,7 +15,7 @@ from source.losses.ce_loss import CECondLoss
 from source.losses.discmixlogistic_loss import DiscMixLogisticLoss
 
 
-def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder):
+def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, poptimizer):
     # if dist.is_primary():
     loader = tqdm(loader)
 
@@ -34,6 +34,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder):
         img = data['input']
 
         model.zero_grad()
+        ent_loss.zero_grad()
 
         img = img.to(device)
 
@@ -44,11 +45,14 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder):
         loss.backward()
 
         logits = entropy_coder(id_t.float())
-        prior_loss = ent_loss(logits, id_t)
+        prior_loss = ent_loss(logits, id_t).reshape(img.shape[0], -1).sum(1).mean()
+
+        prior_loss.backward()
 
         if scheduler is not None:
             scheduler.step()
         optimizer.step()
+        poptimizer.step()
 
         part_mse_sum = recon_loss.item() * img.shape[0]
         part_mse_n = img.shape[0]
@@ -120,11 +124,12 @@ def main(args):
     entropy_coder = PixelCNN(ncode=512, channels_in=1).to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    poptimizer = optim.Adam(entropy_coder.parameters(), lr=args.lr)
     scheduler = None
 
 
     for i in range(args.epoch):
-        train(i, loader, model, optimizer, scheduler, device, entropy_coder)
+        train(i, loader, model, optimizer, scheduler, device, entropy_coder, poptimizer)
 
         os.makedirs("/scratch/xgitiaux/checkpoint/vqvae", exist_ok=True)
         torch.save(model.state_dict(), f"/scratch/xgitiaux/checkpoint/vqvae/vqvae_{str(i + 1).zfill(3)}.pt")
