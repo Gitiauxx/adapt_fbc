@@ -108,7 +108,7 @@ def main(args):
     loader = DataLoader(dataset, batch_size=128 // args.n_gpu, shuffle=True)
 
     validation_dataset = CelebA(args.path, split='valid')
-    validation_loader = DataLoader(validation_dataset, batch_size=64 // args.n_gpu)
+    validation_loader = DataLoader(validation_dataset, batch_size=32 // args.n_gpu)
 
     model = VQVAE(cout=100).to(device)
 
