@@ -10,14 +10,15 @@ from tqdm import tqdm
 
 from source.dataset import CelebA
 from source.autoencoders.vqvae import VQVAE
-
+from source.losses.discmixlogistic_loss import DiscMixLogisticLoss
 
 
 def train(epoch, loader, model, optimizer, scheduler, device):
     # if dist.is_primary():
     loader = tqdm(loader)
 
-    criterion = nn.MSELoss()
+    criterion = DiscMixLogisticLoss()
+        #nn.MSELoss()
 
     mse_sum = 0
     mse_n = 0
@@ -109,7 +110,7 @@ def main(args):
     validation_dataset = CelebA(args.path, split='valid')
     validation_loader = DataLoader(validation_dataset, batch_size=128 // args.n_gpu)
 
-    model = VQVAE().to(device)
+    model = VQVAE(in_channel=100).to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     scheduler = None
