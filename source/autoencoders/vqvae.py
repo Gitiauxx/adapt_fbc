@@ -196,7 +196,7 @@ class VQVAE(TemplateModel):
         quant_t, quant_b, diff, id_t, id_b = self.encode(input)
         dec = self.decode(quant_t, quant_b)
 
-        return dec, diff
+        return dec, diff, id_t
 
     def encode(self, input):
         enc_b = self.enc_b(input)

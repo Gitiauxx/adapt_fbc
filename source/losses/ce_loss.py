@@ -12,7 +12,7 @@ class CECondLoss(TemplateLoss):
     def __init__(self):
         super().__init__()
 
-    def forward(self, target, prelogits):
+    def forward(self, prelogits, target):
         """
 
         :param target: (B, *)

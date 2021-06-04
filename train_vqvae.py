@@ -10,14 +10,18 @@ from tqdm import tqdm
 
 from source.dataset import CelebA
 from source.autoencoders.vqvae import VQVAE
+from source.auditors.pixel_cnn import PixelCNN
+from source.losses.ce_loss import CECondLoss
 from source.losses.discmixlogistic_loss import DiscMixLogisticLoss
 
 
-def train(epoch, loader, model, optimizer, scheduler, device):
+def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder):
     # if dist.is_primary():
     loader = tqdm(loader)
 
     criterion = DiscMixLogisticLoss()
+
+    ent_loss = CECondLoss()
     #nn.MSELoss()
 
     mse_sum = 0
@@ -33,11 +37,14 @@ def train(epoch, loader, model, optimizer, scheduler, device):
 
         img = img.to(device)
 
-        out, latent_loss = model(img)
+        out, latent_loss, id_t = model(img)
         recon_loss = criterion(out, img)
         latent_loss = latent_loss.mean()
         loss = recon_loss + latent_loss_weight * latent_loss
         loss.backward()
+
+        logits = entropy_coder(id_t)
+        prior_loss = ent_loss(logits, id_t)
 
         if scheduler is not None:
             scheduler.step()
@@ -60,6 +67,7 @@ def train(epoch, loader, model, optimizer, scheduler, device):
                     f"epoch: {epoch + 1}; mse: {recon_loss.item():.5f}; "
                     f"latent: {latent_loss.item():.3f}; avg mse: {mse_sum / mse_n:.5f}; "
                     f"lr: {lr:.5f}"
+                    f" prior loss: {ent_loss.item(): .3f}"
                 )
             )
 
@@ -109,12 +117,14 @@ def main(args):
 
     model = VQVAE(cout=30).to(device)
 
+    entropy_coder = PixelCNN(ncode=512)
+
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     scheduler = None
 
 
     for i in range(args.epoch):
-        train(i, loader, model, optimizer, scheduler, device)
+        train(i, loader, model, optimizer, scheduler, device, entropy_coder)
 
         os.makedirs("/scratch/xgitiaux/checkpoint/vqvae", exist_ok=True)
         torch.save(model.state_dict(), f"/scratch/xgitiaux/checkpoint/vqvae/vqvae_{str(i + 1).zfill(3)}.pt")
