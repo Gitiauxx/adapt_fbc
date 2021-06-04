@@ -223,7 +223,7 @@ class CelebA(Dataset):
         self.identity = identity
 
         self.transform = tf.Compose([tf.Resize(size), tf.CenterCrop(size), tf.ToTensor(),
-                                tf.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])]
+                                #tf.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])]
                                )
 
         if range_data is not None:
