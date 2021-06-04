@@ -121,7 +121,7 @@ def main(args):
         os.makedirs("/scratch/xgitiaux/checkpoint/vqvae", exist_ok=True)
         torch.save(model.state_dict(), f"/scratch/xgitiaux/checkpoint/vqvae/vqvae_{str(i + 1).zfill(3)}.pt")
 
-        eval(i, validation_loader, model, device)
+        #eval(i, validation_loader, model, device)
 
 
 if __name__ == "__main__":
