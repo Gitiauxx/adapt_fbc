@@ -18,7 +18,7 @@ def train(epoch, loader, model, optimizer, scheduler, device):
     loader = tqdm(loader)
 
     criterion = DiscMixLogisticLoss()
-        #nn.MSELoss()
+    #nn.MSELoss()
 
     mse_sum = 0
     mse_n = 0
@@ -105,12 +105,9 @@ def main(args):
 
 
     dataset = CelebA(args.path, split='train')
-    loader = DataLoader(dataset, batch_size=128 // args.n_gpu, shuffle=True)
+    loader = DataLoader(dataset, batch_size=64 // args.n_gpu, shuffle=True)
 
-    validation_dataset = CelebA(args.path, split='valid')
-    validation_loader = DataLoader(validation_dataset, batch_size=32 // args.n_gpu)
-
-    model = VQVAE(cout=30).to(device)
+    model = VQVAE(cout=100).to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     scheduler = None
