@@ -24,7 +24,7 @@ def train(epoch, loader, model, optimizer, scheduler, device):
     mse_n = 0
 
 
-    latent_loss_weight = 0.25
+    latent_loss_weight = 0.25 * 100000
 
     for i, data in enumerate(loader):
         img = data['input']
