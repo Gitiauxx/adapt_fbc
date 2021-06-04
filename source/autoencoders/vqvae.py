@@ -167,7 +167,7 @@ class VQVAE(TemplateModel):
         n_res_channel=32,
         embed_dim=64,
         n_embed=512,
-        decay=0.99,
+        cout=3
     ):
         super().__init__()
 
@@ -185,7 +185,7 @@ class VQVAE(TemplateModel):
         )
         self.dec = Decoder(
             embed_dim + embed_dim,
-            in_channel,
+            cout,
             channel,
             n_res_block,
             n_res_channel,
