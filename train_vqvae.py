@@ -107,7 +107,7 @@ def main(args):
     dataset = CelebA(args.path, split='train')
     loader = DataLoader(dataset, batch_size=64 // args.n_gpu, shuffle=True)
 
-    model = VQVAE(cout=100).to(device)
+    model = VQVAE(cout=30).to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     scheduler = None
