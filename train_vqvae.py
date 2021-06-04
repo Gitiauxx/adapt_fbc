@@ -66,11 +66,16 @@ def eval(epoch, loader, model, device):
 
     model.eval()
 
+    mse_sum = 0
+    mse_n = 0
+
     for i, data in enumerate(loader):
         img = data['input']
         img = img.to(device)
 
         out, latent_loss = model(img)
+        out = out.detach()
+        latent_loss.detach()
         recon_loss = criterion(out, img)
         latent_loss = latent_loss.mean()
 
@@ -78,8 +83,8 @@ def eval(epoch, loader, model, device):
         part_mse_n = img.shape[0]
         comm = {"mse_sum": part_mse_sum, "mse_n": part_mse_n}
 
-        mse_sum = comm["mse_sum"]
-        mse_n = comm["mse_n"]
+        mse_sum += comm["mse_sum"]
+        mse_n += comm["mse_n"]
 
         loader.set_description(
                 (
