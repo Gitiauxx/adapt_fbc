@@ -47,7 +47,10 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
         prior_loss = ent_loss(logits, id_t).reshape(img.shape[0], -1).sum(1).mean()
 
         loss = recon_loss + latent_loss_weight * latent_loss + beta * prior_loss
-        loss.backward(retain_graph=True)
+        loss.backward()
+
+        logits = entropy_coder(id_t.float().detach())
+        prior_loss = ent_loss(logits, id_t).reshape(img.shape[0], -1).sum(1).mean()
 
         prior_loss.backward()
 
