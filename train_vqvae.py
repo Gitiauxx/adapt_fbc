@@ -37,6 +37,8 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
         model.zero_grad()
         ent_loss.zero_grad()
 
+        beta += 10**(-8) * i / len(loader)
+
         img = img.to(device)
 
         out, latent_loss, id_t = model(img)
@@ -71,7 +73,8 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
         #if dist.is_primary():
         lr = optimizer.param_groups[0]["lr"]
 
-        loader.set_description(
+        if i % 100 == 0:
+            loader.set_description(
                 (
                     f"epoch: {epoch + 1}; mse: {recon_loss.item():.5f}; "
                     f"latent: {latent_loss.item():.3f}; avg mse: {mse_sum / mse_n:.5f}; "
