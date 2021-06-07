@@ -71,7 +71,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
         mse_sum += comm["mse_sum"]
         mse_n +=comm["mse_n"]
 
-        pred = (logits >= 0).float()
+        pred = logits.argmax(1)
         acc_sum += (pred == id_t).float().sum()
 
         #if dist.is_primary():
