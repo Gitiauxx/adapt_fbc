@@ -72,7 +72,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
         mse_n +=comm["mse_n"]
 
         pred = logits.argmax(1)
-        acc_sum += (pred == id_t).float().sum()
+        acc_sum += (pred == id_t).float().reshape(img.shape[0], -1).mean(1).sum()
 
         #if dist.is_primary():
         lr = optimizer.param_groups[0]["lr"]
