@@ -20,19 +20,19 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
     loader = tqdm(loader)
 
     criterion = DiscMixLogisticLoss()
-
     ent_loss = CECondLoss()
     #nn.MSELoss()
 
     mse_sum = 0
     mse_n = 0
-
+    acc_sum = 0
 
     latent_loss_weight = 0.25 * 100000
     beta = 10**(-5) * epoch
 
     for i, data in enumerate(loader):
         img = data['input']
+        s = data['sensitive']
 
         model.zero_grad()
         ent_loss.zero_grad()
@@ -41,7 +41,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
 
         img = img.to(device)
 
-        out, latent_loss, id_t = model(img)
+        out, latent_loss, id_t = model(img, s)
         recon_loss = criterion(out, img)
         latent_loss = latent_loss.mean()
 
@@ -70,16 +70,19 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
         mse_sum += comm["mse_sum"]
         mse_n +=comm["mse_n"]
 
+        pred = (logits >= 0).float()
+        acc_sum += (pred == id_t).float().sum()
+
         #if dist.is_primary():
         lr = optimizer.param_groups[0]["lr"]
 
-        if i % 100 == 0:
-            loader.set_description(
+        loader.set_description(
                 (
                     f"epoch: {epoch + 1}; mse: {recon_loss.item():.5f}; "
                     f"latent: {latent_loss.item():.3f}; avg mse: {mse_sum / mse_n:.5f}; "
                     f"lr: {lr:.5f}"
                     f" prior loss: {prior_loss.item(): .3f}"
+                    f" accuracy: {acc_sum / mse_n: .3f}"
                 )
             )
 

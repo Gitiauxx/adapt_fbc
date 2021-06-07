@@ -158,6 +158,25 @@ class Decoder(nn.Module):
         return self.blocks(input)
 
 
+class SELayer(nn.Module):
+    def __init__(self, channel, reduction=16, nclass=2):
+        super(SELayer, self).__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.fc = nn.Sequential(
+            nn.Linear(channel + nclass, channel // reduction, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(channel // reduction, channel, bias=False),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x, s):
+        b, c, _, _ = x.size()
+        y = self.avg_pool(x).view(b, c)
+        y = torch.cat([y, s], 1)
+        y = self.fc(y).view(b, c, 1, 1)
+        return x * y.expand_as(x)
+
+
 class VQVAE(TemplateModel):
     def __init__(
         self,
@@ -167,7 +186,8 @@ class VQVAE(TemplateModel):
         n_res_channel=32,
         embed_dim=64,
         n_embed=512,
-        cout=3
+        cout=3,
+        nclass=2
     ):
         super().__init__()
 
@@ -175,6 +195,7 @@ class VQVAE(TemplateModel):
         self.enc_t = Encoder(channel, channel, n_res_block, n_res_channel, stride=2)
         self.quantize_conv_t = nn.Conv2d(channel, embed_dim, 1)
         self.quantize_t = Quantize(embed_dim, n_embed)
+        self.se_t = SELayer(embed_dim, reduction=4, nclass=nclass)
         self.dec_t = Decoder(
             embed_dim, embed_dim, channel, n_res_block, n_res_channel, stride=2
         )
@@ -192,13 +213,13 @@ class VQVAE(TemplateModel):
             stride=4,
         )
 
-    def forward(self, input):
-        quant_t, quant_b, diff, id_t, id_b = self.encode(input)
+    def forward(self, input, s):
+        quant_t, quant_b, diff, id_t, id_b = self.encode(input, s)
         dec = self.decode(quant_t, quant_b)
 
         return dec, diff, id_t
 
-    def encode(self, input):
+    def encode(self, input, s):
         enc_b = self.enc_b(input)
         enc_t = self.enc_t(enc_b)
 
@@ -206,6 +227,8 @@ class VQVAE(TemplateModel):
         quant_t, diff_t, id_t = self.quantize_t(quant_t)
         quant_t = quant_t.permute(0, 3, 1, 2)
         diff_t = diff_t.unsqueeze(0)
+
+        quant_t = self.se_t(quant_t, s)
 
         dec_t = self.dec_t(quant_t)
         enc_b = torch.cat([dec_t, enc_b], 1)
