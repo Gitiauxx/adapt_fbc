@@ -40,6 +40,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
         beta += 10**(-6) * i / len(loader)
 
         img = img.to(device)
+        s = s.to(device)
 
         out, latent_loss, id_t = model(img, s)
         recon_loss = criterion(out, img)
