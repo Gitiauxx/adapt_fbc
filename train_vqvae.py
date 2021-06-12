@@ -86,6 +86,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
                     f"lr: {lr:.5f}"
                     f" prior loss: {prior_loss.item(): .3f}"
                     f" accuracy: {acc_sum / mse_n: .3f}"
+                    f"beta: {beta}"
                 )
             )
 
