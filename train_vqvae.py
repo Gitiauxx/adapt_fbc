@@ -11,6 +11,7 @@ from tqdm import tqdm
 from source.dataset import CelebA
 from source.autoencoders.vqvae import VQVAE
 from source.auditors.pixel_cnn import PixelCNN
+from source.auditors.pixelsnail import PixelSNAIL
 from source.losses.ce_loss import CECondLoss
 from source.losses.discmixlogistic_loss import DiscMixLogisticLoss
 
@@ -29,8 +30,6 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
 
     latent_loss_weight = 0.25 * 100000
     beta = min(10**(-1) * (1 + epoch), 1.0)
-
-    print(beta)
 
     for i, data in enumerate(loader):
         img = data['input']
@@ -137,7 +136,17 @@ def main(args):
 
     model = VQVAE(cout=30).to(device)
 
-    entropy_coder = PixelCNN(ncode=512, channels_in=1).to(device)
+    entropy_coder = PixelSNAIL(
+            [32, 32],
+            512,
+            64,
+            5,
+            4,
+            2,
+            64,
+            n_out_res_block=0,
+        )
+        #PixelCNN(ncode=512, channels_in=1).to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     poptimizer = optim.Adam(entropy_coder.parameters(), lr=args.lr)
