@@ -28,7 +28,9 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
     acc_sum = 0
 
     latent_loss_weight = 0.25 * 100000
-    beta = max(10**(-1) * (1 + epoch), 1.0)
+    beta = min(10**(-1) * (1 + epoch), 1.0)
+
+    print(beta)
 
     for i, data in enumerate(loader):
         img = data['input']
