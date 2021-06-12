@@ -28,7 +28,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
     acc_sum = 0
 
     latent_loss_weight = 0.25 * 100000
-    beta = max(10**(-1) * epoch, 1.0)
+    beta = max(10**(-1) * (1 + epoch), 1.0)
 
     for i, data in enumerate(loader):
         img = data['input']
@@ -160,7 +160,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--dist_url", default=f"tcp://127.0.0.1:{port}")
 
-    parser.add_argument("--size", type=int, default=64)
+    parser.add_argument("--size", type=int, default=256)
     parser.add_argument("--epoch", type=int, default=560)
     parser.add_argument("--lr", type=float, default=3e-4)
     #parser.add_argument("--sched", type=str)
