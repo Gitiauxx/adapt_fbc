@@ -144,7 +144,7 @@ def main(args):
             2,
             64,
             n_out_res_block=0,
-        ).to(devic)
+        ).to(device)
         #PixelCNN(ncode=512, channels_in=1).to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
