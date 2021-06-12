@@ -48,13 +48,13 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
         recon_loss = criterion(out, img)
         latent_loss = latent_loss.mean()
 
-        logits = entropy_coder(id_t.float())
+        logits, _ = entropy_coder(id_t)
         prior_loss = ent_loss(logits, id_t).reshape(img.shape[0], -1).sum(1).mean()
 
         loss = recon_loss + latent_loss_weight * latent_loss + beta * prior_loss
         loss.backward()
 
-        logits = entropy_coder(id_t.float().detach())
+        logits, _ = entropy_coder(id_t.detach())
         prior_loss = ent_loss(logits, id_t).reshape(img.shape[0], -1).sum(1).mean()
 
         prior_loss.backward()
@@ -129,7 +129,6 @@ def eval(epoch, loader, model, device):
 
 def main(args):
     device = "cuda"
-
 
     dataset = CelebA(args.path, split='train')
     loader = DataLoader(dataset, batch_size=64 // args.n_gpu, shuffle=True)
