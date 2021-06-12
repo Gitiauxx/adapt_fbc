@@ -40,6 +40,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
         ent_loss.zero_grad()
 
         beta += 10**(-2) * i / len(loader)
+        beta = min(1.0, beta)
 
         img = img.to(device)
         s = s.to(device)
