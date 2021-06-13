@@ -65,7 +65,7 @@ def main(args):
     #     builtins.print = print_pass
     #
     # ### model ###
-    model = VQVAE(cout=30)
+    model = VQVAE(cout=30).to("cuda")
     print(model)
 
     # if args.distributed:
