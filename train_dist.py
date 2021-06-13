@@ -67,22 +67,22 @@ def main(args):
     #
     # ### model ###
     model = VQVAE(cout=30)
-    #
-    # if args.distributed:
-    #     # For multiprocessing distributed, DistributedDataParallel constructor
-    #     # should always set the single device scope, otherwise,
-    #     # DistributedDataParallel will use all available devices.
-    #     if args.gpu is not None:
-    #         torch.cuda.set_device(args.gpu)
-    #         model.cuda(args.gpu)
-    #         model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
-    #
-    #     else:
-    #         model.cuda()
-    #         model = torch.nn.parallel.DistributedDataParallel(model)
-    #
-    # else:
-    #     raise NotImplementedError("Only DistributedDataParallel is supported.")
+
+    if args.distributed:
+        # For multiprocessing distributed, DistributedDataParallel constructor
+        # should always set the single device scope, otherwise,
+        # DistributedDataParallel will use all available devices.
+        if args.gpu is not None:
+            torch.cuda.set_device(args.gpu)
+            model.cuda(args.gpu)
+            model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
+
+        else:
+            model.cuda()
+            model = torch.nn.parallel.DistributedDataParallel(model)
+
+    else:
+        raise NotImplementedError("Only DistributedDataParallel is supported.")
 
     #if args.rank == 0:
 
