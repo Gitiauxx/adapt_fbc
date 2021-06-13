@@ -79,7 +79,7 @@ def main(args):
 
         else:
             model.cuda()
-            model = torch.nn.parallel.DistributedDataParallel(model)
+            #model = torch.nn.parallel.DistributedDataParallel(model)
 
     else:
         raise NotImplementedError("Only DistributedDataParallel is supported.")
