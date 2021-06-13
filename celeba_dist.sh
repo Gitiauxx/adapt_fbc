@@ -29,16 +29,19 @@ export WORLD_SIZE=2
 #### e.g. master(gnodee[2-5],gnoded1) == gnodee2
 echo "NODELIST="${SLURM_NODELIST}
 
-if [ ${SLURM_NODELIST:7:1} == "," ]; then
-    echo "MASTER_ADDR="${SLURM_NODELIST:0:7}
-    export MASTER_ADDR=${SLURM_NODELIST:0:7}
-elif [ ${SLURM_NODELIST:6:1} == "[" ]; then
-    echo "MASTER_ADDR="${SLURM_NODELIST:0:6}${SLURM_NODELIST:7:1}
-    export MASTER_ADDR=${SLURM_NODELIST:0:6}${SLURM_NODELIST:7:1}
-else
-    echo "MASTER_ADDR="${SLURM_NODELIST}
-    export MASTER_ADDR=${SLURM_NODELIST}
-fi
+#if [ ${SLURM_NODELIST:7:1} == "," ]; then
+#    echo "MASTER_ADDR="${SLURM_NODELIST:0:7}
+#    export MASTER_ADDR=${SLURM_NODELIST:0:7}
+#elif [ ${SLURM_NODELIST:6:1} == "[" ]; then
+#    echo "MASTER_ADDR="${SLURM_NODELIST:0:6}${SLURM_NODELIST:7:1}
+#    export MASTER_ADDR=${SLURM_NODELIST:0:6}${SLURM_NODELIST:7:1}
+#else
+#    echo "MASTER_ADDR="${SLURM_NODELIST}
+#    export MASTER_ADDR=${SLURM_NODELIST}
+#fi
+
+master_addr=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
+export MASTER_ADDR=$master_addr
 
 module load python/3.8.4
 module load cuda/10.2
