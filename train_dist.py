@@ -215,4 +215,5 @@ def validate(val_loader, model, criterion, epoch, args):
 
 if __name__ == '__main__':
     args = parse_args()
+    print(arg)
     main(args)
