@@ -8,7 +8,7 @@
 #SBATCH --nodes=3
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
-#SBATCH --constraint=p40&gmem24G
+##SBATCH --constraint=p40&gmem24G
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64gb
 #SBATCH --error=/scratch/xgitiaux/celeba64_dist_%j.error
