@@ -53,36 +53,37 @@ def main(args):
             args.rank = args.local_rank
             args.gpu = args.local_rank
         elif 'SLURM_PROCID' in os.environ:  # for slurm scheduler
+            print("yeah")
             args.rank = int(os.environ['SLURM_PROCID'])
             args.gpu = args.rank % torch.cuda.device_count()
-        dist.init_process_group(backend=args.dist_backend, init_method=args.dist_url,
-                                world_size=args.world_size, rank=args.rank)
-
-    # suppress printing if not on master gpu
-    if args.rank != 0:
-        def print_pass(*args):
-            pass
-
-        builtins.print = print_pass
-
-    ### model ###
-    model = VQVAE(cout=30)
-
-    if args.distributed:
-        # For multiprocessing distributed, DistributedDataParallel constructor
-        # should always set the single device scope, otherwise,
-        # DistributedDataParallel will use all available devices.
-        if args.gpu is not None:
-            torch.cuda.set_device(args.gpu)
-            model.cuda(args.gpu)
-            model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
-
-        else:
-            model.cuda()
-            model = torch.nn.parallel.DistributedDataParallel(model)
-
-    else:
-        raise NotImplementedError("Only DistributedDataParallel is supported.")
+    #     dist.init_process_group(backend=args.dist_backend, init_method=args.dist_url,
+    #                             world_size=args.world_size, rank=args.rank)
+    #
+    # # suppress printing if not on master gpu
+    # if args.rank != 0:
+    #     def print_pass(*args):
+    #         pass
+    #
+    #     builtins.print = print_pass
+    #
+    # ### model ###
+    # model = VQVAE(cout=30)
+    #
+    # if args.distributed:
+    #     # For multiprocessing distributed, DistributedDataParallel constructor
+    #     # should always set the single device scope, otherwise,
+    #     # DistributedDataParallel will use all available devices.
+    #     if args.gpu is not None:
+    #         torch.cuda.set_device(args.gpu)
+    #         model.cuda(args.gpu)
+    #         model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
+    #
+    #     else:
+    #         model.cuda()
+    #         model = torch.nn.parallel.DistributedDataParallel(model)
+    #
+    # else:
+    #     raise NotImplementedError("Only DistributedDataParallel is supported.")
 
     #if args.rank == 0:
 
