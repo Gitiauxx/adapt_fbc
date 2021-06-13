@@ -45,6 +45,9 @@ def main(args):
         args.world_size = int(os.environ["WORLD_SIZE"])
     args.distributed = args.world_size > 1
 
+    os.makedirs("/scratch/xgitiaux/checkpoint/vqvae_dist", exist_ok=True)
+    print("Create folder vqvae_dist")
+
     if args.distributed:
         if args.local_rank != -1:  # for torch.distributed.launch
             args.rank = args.local_rank
@@ -54,9 +57,6 @@ def main(args):
             args.gpu = args.rank % torch.cuda.device_count()
         dist.init_process_group(backend=args.dist_backend, init_method=args.dist_url,
                                 world_size=args.world_size, rank=args.rank)
-
-    os.makedirs("/scratch/xgitiaux/checkpoint/vqvae_dist", exist_ok=True)
-    print("Create folder vqvae_dist")
 
     # suppress printing if not on master gpu
     if args.rank != 0:
