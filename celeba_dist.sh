@@ -42,6 +42,7 @@ echo "NODELIST="${SLURM_NODELIST}
 
 master_addr=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
 export MASTER_ADDR=$master_addr
+echo "MASTER ADDR="$master_addr
 
 module load python/3.8.4
 module load cuda/10.2
