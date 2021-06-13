@@ -81,6 +81,10 @@ def main(args):
     else:
         raise NotImplementedError("Only DistributedDataParallel is supported.")
 
+    if args.rank == 0:
+        os.makedirs("/scratch/xgitiaux/checkpoint/vqvae_dist", exist_ok=True)
+        print("Create folder vqvae_dist")
+
     ### optimizer ###
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-5)
 
