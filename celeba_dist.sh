@@ -6,14 +6,19 @@
 ### e.g. request 4 nodes with 1 gpu each, totally 4 gpus (WORLD_SIZE==4)
 ### Note: --gres=gpu:x should equal to ntasks-per-node
 
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=64gb
+#SBATCH --job-name=celeba64_tcomp
+#SBATCH --output=/scratch/xgitiaux/celeba64_dist_%j.out
 #SBATCH --error=/scratch/xgitiaux/celeba64_dist_%j.error
 #SBATCH --mail-user=xgitiaux@gmu.edu
 #SBATCH --mail-type=END
+#SBATCH --export=ALL
+#SBATCH --partition=gpuq
+#SBATCH --nodes 1
+#SBATCH --ntasks-per-node=1
+#SBATCH --mem=64G
+#SBATCH --cpus-per-gpu=8
+#SBATCH --qos=csqos
+#SBATCH --gres=gpu:1
 
 ### change 5-digit MASTER_PORT as you wish, slurm will raise Error if duplicated with others
 ### change WORLD_SIZE as gpus/node * num_nodes
