@@ -151,7 +151,7 @@ def main(args):
     device = "cuda"
 
     dataset = CelebA(args.path, split='train')
-    loader = DataLoader(dataset, batch_size=64, shuffle=True)
+    loader = DataLoader(dataset, batch_size=32, shuffle=True)
 
     model = VQVAE(cout=30).to(device)
 
