@@ -89,7 +89,7 @@ def main(args):
         pass
 
     ### data ###
-    dataset = CelebA(args.path, split='train')
+    dataset = CelebA(args.path, split='train', range_data=10000)
     train_sampler = torch.utils.data.distributed.DistributedSampler(dataset, shuffle=True)
     train_loader = torch.utils.data.DataLoader(dataset,
                                                batch_size=args.batch_size,
@@ -121,6 +121,10 @@ def main(args):
         # if args.rank == 0:  # only val and save on master node
         #     validate(val_loader, model, criterion, epoch, args)
             # save checkpoint if needed #
+
+        if args.rank == 0:
+            os.makedirs("/scratch/xgitiaux/checkpoint/vqvae_dist", exist_ok=True)
+            torch.save(model.state_dict(), f"/scratch/xgitiaux/checkpoint/vqvae/vqvae_{str(epoch + 1).zfill(3)}.pt")
 
 
 def train(epoch, loader, model, optimizer):
