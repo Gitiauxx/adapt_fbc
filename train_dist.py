@@ -46,7 +46,6 @@ def main(args):
     args.distributed = args.world_size > 1
 
     os.makedirs("/scratch/xgitiaux/checkpoint/vqvae_dist", exist_ok=True)
-    print("Create folder vqvae_dist")
 
     if args.distributed:
         if args.local_rank != -1:  # for torch.distributed.launch
@@ -89,6 +88,8 @@ def main(args):
 
     ### optimizer ###
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-5)
+
+    print("Create folder vqvae_dist")
 
     # ### resume training if necessary ###
     # if args.resume:
