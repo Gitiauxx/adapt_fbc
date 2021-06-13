@@ -13,7 +13,7 @@
 #SBATCH --mail-type=END
 #SBATCH --export=ALL
 #SBATCH --partition=gpuq
-#SBATCH --nodes 1
+#SBATCH --nodes 2
 #SBATCH --ntasks-per-node=1
 #SBATCH --mem=64G
 #SBATCH --cpus-per-gpu=8
@@ -23,7 +23,7 @@
 ### change 5-digit MASTER_PORT as you wish, slurm will raise Error if duplicated with others
 ### change WORLD_SIZE as gpus/node * num_nodes
 export MASTER_PORT=12340
-export WORLD_SIZE=1
+export WORLD_SIZE=2
 #
 #### get the first node name as master address - customized for vgg slurm
 #### e.g. master(gnodee[2-5],gnoded1) == gnodee2
