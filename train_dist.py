@@ -53,7 +53,6 @@ def main(args):
             args.rank = args.local_rank
             args.gpu = args.local_rank
         elif 'SLURM_PROCID' in os.environ:  # for slurm scheduler
-            print(int(os.environ['SLURM_PROCID']))
             args.rank = int(os.environ['SLURM_PROCID'])
             args.gpu = args.rank % torch.cuda.device_count()
         dist.init_process_group(backend=args.dist_backend, init_method=args.dist_url,
@@ -67,7 +66,7 @@ def main(args):
     #     builtins.print = print_pass
     #
     # ### model ###
-    # model = VQVAE(cout=30)
+    model = VQVAE(cout=30)
     #
     # if args.distributed:
     #     # For multiprocessing distributed, DistributedDataParallel constructor
