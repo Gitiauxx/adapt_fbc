@@ -15,6 +15,13 @@ from source.utils import get_logger
 logger = get_logger(__name__)
 
 
+def find_free_port():
+    import socket
+    s = socket.socket()
+    s.bind(('', 0))            # Bind to a free port provided by the host.
+    return s.getsockname()[1]  # Return the port number assigned.
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--path')
@@ -54,8 +61,22 @@ def main(args):
         elif 'SLURM_PROCID' in os.environ:  # for slurm scheduler
             args.rank = int(os.environ['SLURM_PROCID'])
             args.gpu = args.rank % torch.cuda.device_count()
+
+            jobid = os.environ["SLURM_JOBID"]
+            hostfile = "dist_url." + jobid + ".txt"
+            import socket
+            ip = socket.gethostbyname(socket.gethostname())
+            port = find_free_port()
+            args.dist_url = "tcp://{}:{}".format(ip, port)
+            if args.dist_file is not None:
+                args.dist_url = "file://{}.{}".format(os.path.realpath(args.dist_file), jobid)
+
+            print("dist-url:{} at PROCID {} / {}".format(args.dist_url, args.rank, args.world_size))
+
         dist.init_process_group(backend=args.dist_backend, init_method=args.dist_url,
                                 world_size=args.world_size, rank=args.rank)
+
+
     #
     # # suppress printing if not on master gpu
     # if args.rank != 0:
