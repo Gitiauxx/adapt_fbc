@@ -15,6 +15,9 @@ from source.auditors.pixel_cnn import PixelCNN
 from source.auditors.pixelsnail import PixelSNAIL
 from source.losses.ce_loss import CECondLoss
 from source.losses.discmixlogistic_loss import DiscMixLogisticLoss
+from source.utils import get_logger
+
+logger = get_logger(__name__)
 
 class _CustomDataParallel(DataParallel):
     """
@@ -148,12 +151,12 @@ def main(args):
     device = "cuda"
 
     dataset = CelebA(args.path, split='train')
-    loader = DataLoader(dataset, batch_size=16 // args.n_gpu, shuffle=True)
+    loader = DataLoader(dataset, batch_size=64, shuffle=True)
 
     model = VQVAE(cout=30).to(device)
 
     if torch.cuda.device_count() > 1:
-        print(f'Number of gpu is {torch.cuda.device_count()}')
+        logger.info(f'Number of gpu is {torch.cuda.device_count()}')
         model = _CustomDataParallel(model)
 
     entropy_coder = PixelSNAIL(
@@ -166,6 +169,10 @@ def main(args):
             64,
             n_out_res_block=0,
         ).to(device)
+
+    if torch.cuda.device_count() > 1:
+        logger.info(f'Number of gpu is {torch.cuda.device_count()}')
+        entropy_coder = _CustomDataParallel(entropy_coder)
         #PixelCNN(ncode=512, channels_in=1).to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
