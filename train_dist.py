@@ -87,50 +87,50 @@ def main(args):
     #if args.rank == 0:
 
 
-    ### optimizer ###
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-5)
-
-    ### resume training if necessary ###
-    if args.resume:
-        pass
-
-    ### data ###
-    dataset = CelebA(args.path, split='train', range_data=10000)
-    train_sampler = torch.utils.data.distributed.DistributedSampler(dataset, shuffle=True)
-    train_loader = torch.utils.data.DataLoader(dataset,
-                                               batch_size=args.batch_size,
-                                               shuffle=(train_sampler is None),
-                                               num_workers=args.workers,
-                                               pin_memory=True,
-                                               sampler=train_sampler,
-                                               drop_last=True)
-
-    # val_dataset = MyDataset(mode='val')
-    # val_sampler = None
-    # val_loader = torch.utils.data.DataLoader(
-    #     val_dataset, batch_size=args.batch_size, shuffle=(val_sampler is None),
-    #     num_workers=args.workers, pin_memory=True, sampler=val_sampler, drop_last=True)
-
-    torch.backends.cudnn.benchmark = True
-
-    ### main loop ###
-    for epoch in range(args.start_epoch, args.epochs):
-        np.random.seed(epoch)
-        random.seed(epoch)
-        # fix sampling seed such that each gpu gets different part of dataset
-        if args.distributed:
-            train_loader.sampler.set_epoch(epoch)
-
-        # adjust lr if needed #
-
-        train(epoch, train_loader, model, optimizer)
-        # if args.rank == 0:  # only val and save on master node
-        #     validate(val_loader, model, criterion, epoch, args)
-            # save checkpoint if needed #
-
-        if args.rank == 0:
-            os.makedirs("/scratch/xgitiaux/checkpoint/vqvae_dist", exist_ok=True)
-            torch.save(model.state_dict(), f"/scratch/xgitiaux/checkpoint/vqvae/vqvae_{str(epoch + 1).zfill(3)}.pt")
+    # ### optimizer ###
+    # optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-5)
+    #
+    # ### resume training if necessary ###
+    # if args.resume:
+    #     pass
+    #
+    # ### data ###
+    # dataset = CelebA(args.path, split='train', range_data=10000)
+    # train_sampler = torch.utils.data.distributed.DistributedSampler(dataset, shuffle=True)
+    # train_loader = torch.utils.data.DataLoader(dataset,
+    #                                            batch_size=args.batch_size,
+    #                                            shuffle=(train_sampler is None),
+    #                                            num_workers=args.workers,
+    #                                            pin_memory=True,
+    #                                            sampler=train_sampler,
+    #                                            drop_last=True)
+    #
+    # # val_dataset = MyDataset(mode='val')
+    # # val_sampler = None
+    # # val_loader = torch.utils.data.DataLoader(
+    # #     val_dataset, batch_size=args.batch_size, shuffle=(val_sampler is None),
+    # #     num_workers=args.workers, pin_memory=True, sampler=val_sampler, drop_last=True)
+    #
+    # torch.backends.cudnn.benchmark = True
+    #
+    # ### main loop ###
+    # for epoch in range(args.start_epoch, args.epochs):
+    #     np.random.seed(epoch)
+    #     random.seed(epoch)
+    #     # fix sampling seed such that each gpu gets different part of dataset
+    #     if args.distributed:
+    #         train_loader.sampler.set_epoch(epoch)
+    #
+    #     # adjust lr if needed #
+    #
+    #     train(epoch, train_loader, model, optimizer)
+    #     # if args.rank == 0:  # only val and save on master node
+    #     #     validate(val_loader, model, criterion, epoch, args)
+    #         # save checkpoint if needed #
+    #
+    #     if args.rank == 0:
+    #         os.makedirs("/scratch/xgitiaux/checkpoint/vqvae_dist", exist_ok=True)
+    #         torch.save(model.state_dict(), f"/scratch/xgitiaux/checkpoint/vqvae/vqvae_{str(epoch + 1).zfill(3)}.pt")
 
 
 def train(epoch, loader, model, optimizer):
