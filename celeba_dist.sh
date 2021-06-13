@@ -6,7 +6,7 @@
 ### e.g. request 4 nodes with 1 gpu each, totally 4 gpus (WORLD_SIZE==4)
 ### Note: --gres=gpu:x should equal to ntasks-per-node
 
-#SBATCH --nodes=3
+#SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
@@ -18,7 +18,7 @@
 ### change 5-digit MASTER_PORT as you wish, slurm will raise Error if duplicated with others
 ### change WORLD_SIZE as gpus/node * num_nodes
 export MASTER_PORT=12340
-export WORLD_SIZE=3
+export WORLD_SIZE=1
 #
 #### get the first node name as master address - customized for vgg slurm
 #### e.g. master(gnodee[2-5],gnoded1) == gnodee2
@@ -40,4 +40,4 @@ module load cuda/10.2
 source ../afbc-env/bin/activate
 
 echo $SLURM_ARRAY_TASK_ID
-../afbc-env/bin/python3 train_dist.py --path ../data_vae --
+../afbc-env/bin/python3 train_dist.py --path ../data_vae
