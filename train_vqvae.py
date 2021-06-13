@@ -7,6 +7,7 @@ from torch import nn, optim
 from torch.utils.data import DataLoader
 
 from tqdm import tqdm
+from torch.nn.parallel.data_parallel import DataParallel
 
 from source.dataset import CelebA
 from source.autoencoders.vqvae import VQVAE
@@ -14,6 +15,22 @@ from source.auditors.pixel_cnn import PixelCNN
 from source.auditors.pixelsnail import PixelSNAIL
 from source.losses.ce_loss import CECondLoss
 from source.losses.discmixlogistic_loss import DiscMixLogisticLoss
+
+class _CustomDataParallel(DataParallel):
+    """
+    DataParallel distribute batches across multiple GPUs
+
+    https://github.com/pytorch/pytorch/issues/16885
+    """
+
+    def __init__(self, model):
+        super(_CustomDataParallel, self).__init__(model)
+
+    def __getattr__(self, name):
+        try:
+            return super(_CustomDataParallel, self).__getattr__(name)
+        except AttributeError:
+            return getattr(self.module, name)
 
 
 def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, poptimizer):
@@ -134,6 +151,10 @@ def main(args):
     loader = DataLoader(dataset, batch_size=16 // args.n_gpu, shuffle=True)
 
     model = VQVAE(cout=30).to(device)
+
+    if torch.cuda.device_count() > 1:
+        print(f'Number of gpu is {torch.cuda.device_count()}')
+        model = _CustomDataParallel(model)
 
     entropy_coder = PixelSNAIL(
             [32, 32],
