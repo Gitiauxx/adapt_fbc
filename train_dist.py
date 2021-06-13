@@ -96,17 +96,17 @@ def main(args):
     #     pass
     #
     # ### data ###
-    dataset = CelebA(args.path, split='train', range_data=10000)
-    train_sampler = torch.utils.data.distributed.DistributedSampler(dataset, shuffle=True)
-    train_loader = torch.utils.data.DataLoader(dataset,
-                                               batch_size=args.batch_size,
-                                               shuffle=(train_sampler is None),
-                                               num_workers=args.workers,
-                                               pin_memory=True,
-                                               sampler=train_sampler,
-                                               drop_last=True)
+    # dataset = CelebA(args.path, split='train', range_data=10000)
+    # train_sampler = torch.utils.data.distributed.DistributedSampler(dataset, shuffle=True)
+    # train_loader = torch.utils.data.DataLoader(dataset,
+    #                                            batch_size=args.batch_size,
+    #                                            shuffle=(train_sampler is None),
+    #                                            num_workers=args.workers,
+    #                                            pin_memory=True,
+    #                                            sampler=train_sampler,
+    #                                            drop_last=True)
 
-    print(len(train_loader))
+    #print(len(train_loader))
     #
     # # val_dataset = MyDataset(mode='val')
     # # val_sampler = None
