@@ -68,8 +68,6 @@ def main(args):
             ip = socket.gethostbyname(socket.gethostname())
             port = find_free_port()
             args.dist_url = "tcp://{}:{}".format(ip, port)
-            if args.dist_file is not None:
-                args.dist_url = "file://{}.{}".format(os.path.realpath(args.dist_file), jobid)
 
             print("dist-url:{} at PROCID {} / {}".format(args.dist_url, args.rank, args.world_size))
 
