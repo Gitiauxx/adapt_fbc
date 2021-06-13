@@ -53,11 +53,11 @@ def main(args):
             args.rank = args.local_rank
             args.gpu = args.local_rank
         elif 'SLURM_PROCID' in os.environ:  # for slurm scheduler
-            print("yeah")
+            print(int(os.environ['SLURM_PROCID']))
             args.rank = int(os.environ['SLURM_PROCID'])
             args.gpu = args.rank % torch.cuda.device_count()
-    #     dist.init_process_group(backend=args.dist_backend, init_method=args.dist_url,
-    #                             world_size=args.world_size, rank=args.rank)
+        dist.init_process_group(backend=args.dist_backend, init_method=args.dist_url,
+                                world_size=args.world_size, rank=args.rank)
     #
     # # suppress printing if not on master gpu
     # if args.rank != 0:
