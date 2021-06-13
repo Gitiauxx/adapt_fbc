@@ -10,6 +10,9 @@ import torch.distributed as dist
 from source.autoencoders.vqvae import VQVAE
 from source.dataset import CelebA
 from source.losses.discmixlogistic_loss import DiscMixLogisticLoss
+from source.utils import get_logger
+
+logger = get_logger(__name__)
 
 
 def parse_args():
@@ -150,6 +153,8 @@ def train(epoch, loader, model, optimizer):
         out, latent_loss, id_t = model(img, s)
         recon_loss = criterion(out, img)
         latent_loss = latent_loss.mean()
+
+        logger.info(recon_loss.item())
 
         # logits, _ = entropy_coder(id_t)
         # prior_loss = ent_loss(logits, id_t).reshape(img.shape[0], -1).sum(1).mean()
