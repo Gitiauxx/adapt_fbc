@@ -16,6 +16,9 @@ from source.auditors.pixelsnail import PixelSNAIL
 from source.losses.ce_loss import CECondLoss
 from source.losses.discmixlogistic_loss import DiscMixLogisticLoss
 from source.utils import get_logger
+import torchvision.transforms as tf
+
+import webdataset as wds
 
 logger = get_logger(__name__)
 
@@ -51,9 +54,9 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
     latent_loss_weight = 0.25 * 100000
     beta = 1.0
 
-    for i, data in enumerate(loader):
-        img = data['input']
-        s = data['sensitive']
+    for img, sensitive in loader:
+        # img = data['input']
+        # s = data['sensitive']
 
         model.zero_grad()
         ent_loss.zero_grad()
@@ -110,48 +113,35 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
                 )
             )
 
-def eval(epoch, loader, model, device):
 
-    loader = tqdm(loader)
+def identity(x):
 
-    criterion = nn.MSELoss()
+    s = torch.zeros(2)
+    if x == 1:
+        s[0] = 1
+    else:
+        s[1] = 1
 
-    model.eval()
+    return s
 
-    mse_sum = 0
-    mse_n = 0
-
-    for i, data in enumerate(loader):
-        img = data['input']
-        img = img.to(device)
-
-        out, latent_loss = model(img)
-        out = out.detach()
-        latent_loss.detach()
-        recon_loss = criterion(out, img)
-        latent_loss = latent_loss.mean()
-
-        part_mse_sum = recon_loss.item() * img.shape[0]
-        part_mse_n = img.shape[0]
-        comm = {"mse_sum": part_mse_sum, "mse_n": part_mse_n}
-
-        mse_sum += comm["mse_sum"]
-        mse_n += comm["mse_n"]
-
-        loader.set_description(
-                (
-                    f"epoch: {epoch + 1}; mse: {recon_loss.item():.5f}; "
-                    f"latent: {latent_loss.item():.3f}; avg mse: {mse_sum / mse_n:.5f}; "
-                )
-            )
-
-    model.train()
 
 def main(args):
     device = "cuda"
 
-    dataset = CelebA(args.path, split='train')
-    loader = DataLoader(dataset, batch_size=32, shuffle=True)
+    #dataset = CelebA(args.path, split='train')
+    preproc = tf.Compose([tf.Resize(128), tf.CenterCrop(128), tf.ToTensor()])
+
+    url = os.path.join(args.path, '/train_{0..162}.tar')
+    dataset = (wds.Dataset(url)
+               .shuffle(200)
+               .decode("pil")
+               .to_tuple("input.jpg", "sensitive.cls")
+               .map_tuple(preproc, identity)
+               .batched(32)
+               )
+
+    loader = DataLoader(dataset, batch_size=None)
+    #loader = DataLoader(dataset, batch_size=32, shuffle=True)
 
     model = VQVAE(cout=30).to(device)
 
