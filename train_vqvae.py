@@ -72,9 +72,10 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
         s = s.to(device)
 
         out, latent_loss, id_t = model(img, s)
+        recon_loss = criterion(out, img)
+        latent_loss = latent_loss.mean()
+
         if i % 2 == 0:
-            recon_loss = criterion(out, img)
-            latent_loss = latent_loss.mean()
 
             logits, _ = entropy_coder(id_t)
             prior_loss = ent_loss(logits, id_t).reshape(img.shape[0], -1).sum(1).mean()
