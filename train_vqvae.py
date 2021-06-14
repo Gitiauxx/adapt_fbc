@@ -137,10 +137,10 @@ def main(args):
                .decode("pil")
                .to_tuple("input.jpg", "sensitive.cls")
                .map_tuple(preproc, identity)
-               .batched(32)
+               .batched(50)
                )
 
-    loader = DataLoader(dataset, batch_size=None, num_workers=16)
+    loader = DataLoader(dataset, batch_size=None, num_workers=12)
     #loader = DataLoader(dataset, batch_size=32, shuffle=True)
 
     model = VQVAE(cout=30).to(device)
