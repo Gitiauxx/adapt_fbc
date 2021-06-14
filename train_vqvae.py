@@ -72,24 +72,28 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
         s = s.to(device)
 
         out, latent_loss, id_t = model(img, s)
-        recon_loss = criterion(out, img)
-        latent_loss = latent_loss.mean()
+        if i % 2 == 0:
+            recon_loss = criterion(out, img)
+            latent_loss = latent_loss.mean()
 
-        logits, _ = entropy_coder(id_t)
-        prior_loss = ent_loss(logits, id_t).reshape(img.shape[0], -1).sum(1).mean()
+            logits, _ = entropy_coder(id_t)
+            prior_loss = ent_loss(logits, id_t).reshape(img.shape[0], -1).sum(1).mean()
 
-        loss = recon_loss + latent_loss_weight * latent_loss + beta * prior_loss
-        loss.backward()
+            loss = recon_loss + latent_loss_weight * latent_loss + beta * prior_loss
+            loss.backward()
+            optimizer.step()
+            poptimizer.step()
 
-        logits, _ = entropy_coder(id_t.detach())
-        prior_loss = ent_loss(logits, id_t).reshape(img.shape[0], -1).sum(1).mean()
+        else:
+            logits, _ = entropy_coder(id_t.detach())
+            prior_loss = ent_loss(logits, id_t).reshape(img.shape[0], -1).sum(1).mean()
 
-        prior_loss.backward()
+            prior_loss.backward()
 
         if scheduler is not None:
             scheduler.step()
-        optimizer.step()
-        poptimizer.step()
+
+
 
         part_mse_sum = recon_loss.item() * img.shape[0]
         part_mse_n = img.shape[0]
