@@ -150,7 +150,7 @@ def main(args):
         model = _CustomDataParallel(model)
 
     entropy_coder = PixelSNAIL(
-            [32, 32],
+            [16, 16],
             512,
             64,
             5,
