@@ -8,8 +8,8 @@
 #SBATCH --export=ALL
 #SBATCH --partition=gpuq
 #SBATCH --nodes 1
-##SBATCH --tasks 4
-#SBATCH --ntasks-per-node 8
+##SBATCH --tasks 1
+#SBATCH --ntasks-per-node 16
 #SBATCH --mem=64G
 #SBATCH --cpus-per-gpu=8
 #SBATCH --qos=csqos
