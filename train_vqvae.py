@@ -129,7 +129,7 @@ def main(args):
     device = "cuda"
 
 
-    preproc = tf.Compose([tf.Resize(128), tf.CenterCrop(128), tf.ToTensor()])
+    preproc = tf.Compose([tf.Resize(256), tf.CenterCrop(256), tf.ToTensor()])
 
     url = '../data_celeba_tar/train_{0..162}.tar'
     dataset = (wds.Dataset(url, length=162000/32)
@@ -150,7 +150,7 @@ def main(args):
         model = _CustomDataParallel(model)
 
     entropy_coder = PixelSNAIL(
-            [16, 16],
+            [32, 32],
             512,
             64,
             5,
