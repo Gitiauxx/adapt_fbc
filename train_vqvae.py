@@ -3,6 +3,7 @@ import sys
 import os
 
 import torch
+import torchvision.utils as utils
 from torch import nn, optim
 from torch.utils.data import DataLoader
 
@@ -129,7 +130,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
                 disc = DiscMixLogistic(out, num_mix=num_mix)
                 out = disc.sample()
 
-            torch.utils.save_image(
+            utils.save_image(
                 torch.cat([sample, out], 0),
                 f"/scratch/xgitiaux/samples/vqvae/{str(epoch + 1).zfill(5)}_{str(i).zfill(5)}.png",
                 nrow=sample_size,
