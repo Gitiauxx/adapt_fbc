@@ -134,8 +134,6 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
                 torch.cat([sample, out], 0),
                 f"/scratch/xgitiaux/samples/vqvae/{str(epoch + 1).zfill(5)}_{str(i).zfill(5)}.png",
                 nrow=sample_size,
-                # normalize=True,
-                # range=(-1, 1),
             )
 
             model.train()
@@ -159,12 +157,12 @@ def main(args):
     preproc = tf.Compose([tf.Resize(256), tf.CenterCrop(256), tf.ToTensor()])
 
     url = '../data_celeba_tar/train_{0..162}.tar'
-    dataset = (wds.Dataset(url, length=162000 // 64)
-               .shuffle(200)
+    dataset = (wds.Dataset(url, length=162000 // 32)
+               .shuffle(500)
                .decode("pil")
                .to_tuple("input.jpg", "sensitive.cls")
                .map_tuple(preproc, identity)
-               .batched(64)
+               .batched(32)
                )
 
     loader = DataLoader(dataset, batch_size=None, num_workers=16)
