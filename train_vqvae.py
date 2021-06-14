@@ -116,6 +116,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
                 )
             )
 
+        os.makedirs("/scratch/xgitiaux/samples/vqvae", exist_ok=True)
         if i % 200 == 0:
             model.eval()
 
@@ -130,7 +131,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
 
             torch.utils.save_image(
                 torch.cat([sample, out], 0),
-                f"sample/{str(epoch + 1).zfill(5)}_{str(i).zfill(5)}.png",
+                f"/scratch/xgitiaux/samples/vqvae/{str(epoch + 1).zfill(5)}_{str(i).zfill(5)}.png",
                 nrow=sample_size,
                 # normalize=True,
                 # range=(-1, 1),
