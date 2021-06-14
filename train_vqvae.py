@@ -140,7 +140,7 @@ def main(args):
                .batched(32)
                )
 
-    loader = DataLoader(dataset, batch_size=None, num_workers=8)
+    loader = DataLoader(dataset, batch_size=None, num_workers=16)
     #loader = DataLoader(dataset, batch_size=32, shuffle=True)
 
     model = VQVAE(cout=30).to(device)
