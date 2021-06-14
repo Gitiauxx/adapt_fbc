@@ -11,6 +11,7 @@ from torch.nn.parallel.data_parallel import DataParallel
 
 from source.dataset import CelebA
 from source.autoencoders.vqvae import VQVAE
+from source.distributions import DiscMixLogistic
 from source.auditors.pixel_cnn import PixelCNN
 from source.auditors.pixelsnail import PixelSNAIL
 from source.losses.ce_loss import CECondLoss
@@ -39,11 +40,11 @@ class _CustomDataParallel(DataParallel):
             return getattr(self.module, name)
 
 
-def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, poptimizer):
+def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, poptimizer, sample_size=8):
     # if dist.is_primary():
     loader = tqdm(loader)
 
-    criterion = nn.MSELoss() #DiscMixLogisticLoss()
+    criterion = DiscMixLogisticLoss()
     ent_loss = CECondLoss()
     #nn.MSELoss()
 
@@ -51,11 +52,12 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
     mse_n = 0
     acc_sum = 0
 
-    latent_loss_weight = 0.25 \
-                         #* 100000
-    beta = 10**(-5)
+    latent_loss_weight = 0.25 * 100000
+    beta = 1.0
 
-    for img, s in loader:
+    for i, data in enumerate(loader):
+        img = data[0]
+        s = data[1]
         # img = data['input']
         # s = data['sensitive']
 
@@ -114,6 +116,28 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
                 )
             )
 
+        if i % 200 == 0:
+            model.eval()
+
+            sample = img[:sample_size]
+            s = s[:sample_size]
+
+            with torch.no_grad():
+                out, _, _ = model(sample, s)
+                num_mix = int(out.shape[1] / 10)
+                disc = DiscMixLogistic(out, num_mix=num_mix)
+                out = disc.sample()
+
+            torch.utils.save_image(
+                torch.cat([sample, out], 0),
+                f"sample/{str(epoch + 1).zfill(5)}_{str(i).zfill(5)}.png",
+                nrow=sample_size,
+                # normalize=True,
+                # range=(-1, 1),
+            )
+
+            model.train()
+
 
 def identity(x):
 
@@ -144,7 +168,7 @@ def main(args):
     loader = DataLoader(dataset, batch_size=None, num_workers=16)
     #loader = DataLoader(dataset, batch_size=32, shuffle=True)
 
-    model = VQVAE(cout=3).to(device)
+    model = VQVAE(cout=30).to(device)
 
     if torch.cuda.device_count() > 1:
         logger.info(f'Number of gpu is {torch.cuda.device_count()}')
