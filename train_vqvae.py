@@ -131,7 +131,7 @@ def main(args):
     #dataset = CelebA(args.path, split='train')
     preproc = tf.Compose([tf.Resize(128), tf.CenterCrop(128), tf.ToTensor()])
 
-    url = os.path.join(args.path, '/train_{0..162}.tar')
+    url = '../data_celeba_tar/train_{0..162}.tar'
     dataset = (wds.Dataset(url)
                .shuffle(200)
                .decode("pil")
