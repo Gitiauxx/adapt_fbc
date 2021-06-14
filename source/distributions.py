@@ -108,7 +108,7 @@ class DiscMixLogistic:
     def sample(self, t=1.):
         gumbel = -torch.log(
             - torch.log(torch.Tensor(self.logit_probs.size()).uniform_(1e-5, 1. - 1e-5).cuda()))  # B, M, H, W
-        sel = _to_one_hot(torch.argmax(self.logit_probs / t + gumbel, 1), self.num_mix, dim=1)  # B, M, H, W
+        sel = _to_one_hot(torch.argmax(self.logit_probs / t + gumbel, 1), self.num_mix).permute(0, 3, 1, 2)  # B, M, H, W
         sel = sel.unsqueeze(1)  # B, 1, M, H, W
 
         # select logistic parameters
