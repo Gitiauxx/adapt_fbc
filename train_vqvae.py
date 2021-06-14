@@ -53,7 +53,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
 
     latent_loss_weight = 0.25 \
                          #* 100000
-    beta = 10**(-4)
+    beta = 10**(-5)
 
     for img, s in loader:
         # img = data['input']
