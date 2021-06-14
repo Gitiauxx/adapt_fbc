@@ -132,7 +132,7 @@ def main(args):
     preproc = tf.Compose([tf.Resize(256), tf.CenterCrop(256), tf.ToTensor()])
 
     url = '../data_celeba_tar/train_{0..162}.tar'
-    dataset = (wds.Dataset(url, length=162000/32)
+    dataset = (wds.Dataset(url, length=162000 // 32)
                .shuffle(200)
                .decode("pil")
                .to_tuple("input.jpg", "sensitive.cls")
@@ -140,7 +140,7 @@ def main(args):
                .batched(32)
                )
 
-    loader = DataLoader(dataset, batch_size=None)
+    loader = DataLoader(dataset, batch_size=None, num_workers=8)
     #loader = DataLoader(dataset, batch_size=32, shuffle=True)
 
     model = VQVAE(cout=30).to(device)
