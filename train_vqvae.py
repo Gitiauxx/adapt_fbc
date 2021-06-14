@@ -43,7 +43,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
     # if dist.is_primary():
     loader = tqdm(loader)
 
-    criterion = DiscMixLogisticLoss()
+    criterion = nn.MSELoss() #DiscMixLogisticLoss()
     ent_loss = CECondLoss()
     #nn.MSELoss()
 
@@ -51,8 +51,9 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
     mse_n = 0
     acc_sum = 0
 
-    latent_loss_weight = 0.25 * 100000
-    beta = 1.0
+    latent_loss_weight = 0.25 \
+                         #* 100000
+    beta = 10**(-4)
 
     for img, s in loader:
         # img = data['input']
@@ -129,28 +130,28 @@ def main(args):
     device = "cuda"
 
 
-    preproc = tf.Compose([tf.Resize(128), tf.CenterCrop(128), tf.ToTensor()])
+    preproc = tf.Compose([tf.Resize(256), tf.CenterCrop(256), tf.ToTensor()])
 
     url = '../data_celeba_tar/train_{0..162}.tar'
-    dataset = (wds.Dataset(url, length=162000 // 128)
+    dataset = (wds.Dataset(url, length=162000 // 64)
                .shuffle(200)
                .decode("pil")
                .to_tuple("input.jpg", "sensitive.cls")
                .map_tuple(preproc, identity)
-               .batched(128)
+               .batched(64)
                )
 
     loader = DataLoader(dataset, batch_size=None, num_workers=16)
     #loader = DataLoader(dataset, batch_size=32, shuffle=True)
 
-    model = VQVAE(cout=30).to(device)
+    model = VQVAE(cout=3).to(device)
 
     if torch.cuda.device_count() > 1:
         logger.info(f'Number of gpu is {torch.cuda.device_count()}')
         model = _CustomDataParallel(model)
 
     entropy_coder = PixelSNAIL(
-            [16, 16],
+            [32, 32],
             512,
             64,
             5,
