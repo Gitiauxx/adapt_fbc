@@ -11,9 +11,9 @@
 ##SBATCH --tasks 1
 #SBATCH --ntasks-per-node 16
 #SBATCH --mem=64G
-#SBATCH --cpus-per-gpu=8
+##SBATCH --cpus-per-gpu=8
 #SBATCH --qos=csqos
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:4
 
 module load python/3.8.4
 module load cuda/10.2
