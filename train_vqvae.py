@@ -128,12 +128,11 @@ def identity(x):
 def main(args):
     device = "cuda"
 
-    dataset = CelebA(args.path, split='train')
-    l = len(dataset) / 32
+
     preproc = tf.Compose([tf.Resize(128), tf.CenterCrop(128), tf.ToTensor()])
 
     url = '../data_celeba_tar/train_{0..162}.tar'
-    dataset = (wds.Dataset(url, length=l)
+    dataset = (wds.Dataset(url, length=162000/32)
                .shuffle(200)
                .decode("pil")
                .to_tuple("input.jpg", "sensitive.cls")
