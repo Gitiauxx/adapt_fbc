@@ -86,7 +86,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
 
         else:
             logits, _ = entropy_coder(id_t.detach())
-            prior_loss = ent_loss(logits, id_t).reshape(img.shape[0], -1).sum(1).mean()
+            prior_loss = ent_loss(logits, id_t.detach()).reshape(img.shape[0], -1).sum(1).mean()
 
             prior_loss.backward()
             poptimizer.step()
@@ -112,7 +112,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
         lr = optimizer.param_groups[0]["lr"]
 
         loader.set_description(
-                (
+                (   f"Iteration: {i}"
                     f"epoch: {epoch + 1}; mse: {recon_loss.item():.5f}; "
                     f"latent: {latent_loss.item():.3f}; avg mse: {mse_sum / mse_n:.5f}; "
                     f"lr: {lr:.5f}"
