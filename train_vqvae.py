@@ -83,13 +83,14 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
             loss = recon_loss + latent_loss_weight * latent_loss + beta * prior_loss
             loss.backward()
             optimizer.step()
-            poptimizer.step()
+
 
         else:
             logits, _ = entropy_coder(id_t.detach())
             prior_loss = ent_loss(logits, id_t).reshape(img.shape[0], -1).sum(1).mean()
 
             prior_loss.backward()
+            poptimizer.step()
 
         if scheduler is not None:
             scheduler.step()
