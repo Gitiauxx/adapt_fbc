@@ -63,7 +63,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
         # s = data['sensitive']
 
         model.zero_grad()
-        ent_loss.zero_grad()
+        entropy_coder.zero_grad()
 
         # beta += 10**(-2) * i / len(loader)
         # beta = min(1.0, beta)
@@ -83,7 +83,6 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
             loss = recon_loss + latent_loss_weight * latent_loss + beta * prior_loss
             loss.backward()
             optimizer.step()
-
 
         else:
             logits, _ = entropy_coder(id_t.detach())
