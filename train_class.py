@@ -72,7 +72,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
         out, latent_loss, id_t = model(img, s)
         id_t = id_t.reshape(img.shape[0], -1)
 
-        logits, _ = entropy_coder(id_t.detach().float())
+        logits = entropy_coder(id_t.detach().float())
 
         s = s.argmax(-1)
 
