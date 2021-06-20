@@ -74,7 +74,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
 
         s = s.argmax(-1)
         logits = logits.squeeze(1)
-        prior_loss = criterion(logits, s.long())
+        prior_loss = criterion(logits, s.float())
 
         prior_loss.backward()
         poptimizer.step()
