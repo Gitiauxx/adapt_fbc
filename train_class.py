@@ -80,7 +80,9 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
         poptimizer.step()
 
         pred = (logits >= 0).float()
-        acc_sum += (pred == s).float().reshape(img.shape[0], -1).mean(1).sum()
+        acc_sum += (pred == s).float().sum()
+
+        mse_n += img.shape[0]
 
         #lr = optimizer.param_groups[0]["lr"]
 
