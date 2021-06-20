@@ -48,8 +48,6 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
     # if dist.is_primary():
     loader = tqdm(loader)
 
-    criterion = DiscMixLogisticLoss()
-
     mse_n = 0
     acc_sum = 0
 
@@ -75,8 +73,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
         logits = entropy_coder(id_t.detach().float())
 
         s = s.argmax(-1)
-        s = s.unsqueeze(1).long()
-
+        logits = logits.squeeze(1)
         prior_loss = criterion(logits, s)
 
         prior_loss.backward()
