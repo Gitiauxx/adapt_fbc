@@ -207,7 +207,8 @@ def main(args):
         64,
         n_out_res_block=0,
         n_cond_res_block=2,
-        cond_res_channel=64
+        cond_res_channel=64,
+        attention=False
     ).to(device)
 
     if torch.cuda.device_count() > 1:
