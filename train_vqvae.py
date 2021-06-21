@@ -137,7 +137,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, ent
             s = s[:sample_size]
 
             with torch.no_grad():
-                out, _, _ = model(sample, s)
+                out, _, _,  = model(sample, s)
                 num_mix = int(out.shape[1] / 10)
                 disc = DiscMixLogistic(out, num_mix=num_mix)
                 out = disc.sample()
