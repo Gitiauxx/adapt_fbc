@@ -82,7 +82,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, ent
             prior_loss = ent_loss(logits, id_t).reshape(img.shape[0], -1).sum(1).mean()
 
             logits_b, _ = entropy_coder_bottom(id_b, condition=id_t)
-            prior_loss += ent_loss(logits, id_b).reshape(img.shape[0], -1).sum(1).mean()
+            prior_loss += ent_loss(logits_b, id_b).reshape(img.shape[0], -1).sum(1).mean()
 
             loss = recon_loss + latent_loss_weight * latent_loss + beta * prior_loss
             loss.backward()
@@ -93,7 +93,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, ent
             prior_loss = ent_loss(logits, id_t.detach()).reshape(img.shape[0], -1).sum(1).mean()
 
             logits_b, _ = entropy_coder_bottom(id_b.detach(), condition=id_t.detach())
-            prior_loss += ent_loss(logits, id_b.detach()).reshape(img.shape[0], -1).sum(1).mean()
+            prior_loss += ent_loss(logits_b, id_b.detach()).reshape(img.shape[0], -1).sum(1).mean()
 
             prior_loss.backward()
             poptimizer.step()
