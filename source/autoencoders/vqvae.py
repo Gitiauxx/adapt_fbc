@@ -201,9 +201,7 @@ class VQVAE(TemplateModel):
         )
         self.quantize_conv_b = nn.Conv2d(embed_dim + channel, embed_dim, 1)
         self.quantize_b = Quantize(embed_dim, n_embed)
-        self.upsample_t = nn.ConvTranspose2d(
-            embed_dim, embed_dim, 4, stride=2, padding=1
-        )
+        self.upsample_t = nn.ConvTranspose2d(embed_dim, embed_dim, 4, stride=2, padding=1)
         self.dec = Decoder(
             embed_dim + embed_dim,
             cout,
@@ -214,12 +212,12 @@ class VQVAE(TemplateModel):
         )
 
     def forward(self, input, s):
-        quant_t, quant_b, diff, id_t, id_b = self.encode(input, s)
-        dec = self.decode(quant_t, quant_b)
+        quant_t, quant_b, diff, id_t, id_b = self.encode(input)
+        dec = self.decode(quant_t, quant_b, s)
 
-        return dec, diff, id_t
+        return dec, diff, id_t, id_b
 
-    def encode(self, input, s):
+    def encode(self, input):
         enc_b = self.enc_b(input)
         enc_t = self.enc_t(enc_b)
 
@@ -227,8 +225,6 @@ class VQVAE(TemplateModel):
         quant_t, diff_t, id_t = self.quantize_t(quant_t)
         quant_t = quant_t.permute(0, 3, 1, 2)
         diff_t = diff_t.unsqueeze(0)
-
-        quant_t = self.se_t(quant_t, s)
 
         dec_t = self.dec_t(quant_t)
         enc_b = torch.cat([dec_t, enc_b], 1)
@@ -240,7 +236,8 @@ class VQVAE(TemplateModel):
 
         return quant_t, quant_b, diff_t + diff_b, id_t, id_b
 
-    def decode(self, quant_t, quant_b):
+    def decode(self, quant_t, quant_b, s):
+        quant_t = self.se_t(quant_t, s)
         upsample_t = self.upsample_t(quant_t)
         quant = torch.cat([upsample_t, quant_b], 1)
         dec = self.dec(quant)

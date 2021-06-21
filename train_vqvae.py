@@ -41,7 +41,7 @@ class _CustomDataParallel(DataParallel):
             return getattr(self.module, name)
 
 
-def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, poptimizer, sample_size=8):
+def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, entropy_coder_bottom, poptimizer, sample_size=8):
     # if dist.is_primary():
     loader = tqdm(loader)
 
@@ -64,6 +64,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
 
         model.zero_grad()
         entropy_coder.zero_grad()
+        entropy_coder_bottom.zero_grad()
 
         # beta += 10**(-2) * i / len(loader)
         # beta = min(1.0, beta)
@@ -71,7 +72,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
         img = img.to(device)
         s = s.to(device)
 
-        out, latent_loss, id_t = model(img, s)
+        out, latent_loss, id_t, id_b = model(img, s)
         recon_loss = criterion(out, img)
         latent_loss = latent_loss.mean()
 
@@ -80,6 +81,9 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
             logits, _ = entropy_coder(id_t)
             prior_loss = ent_loss(logits, id_t).reshape(img.shape[0], -1).sum(1).mean()
 
+            logits_b, _ = entropy_coder(id_b, condition=id_t)
+            prior_loss += ent_loss(logits, id_b).reshape(img.shape[0], -1).sum(1).mean()
+
             loss = recon_loss + latent_loss_weight * latent_loss + beta * prior_loss
             loss.backward()
             optimizer.step()
@@ -87,6 +91,9 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
         else:
             logits, _ = entropy_coder(id_t.detach())
             prior_loss = ent_loss(logits, id_t.detach()).reshape(img.shape[0], -1).sum(1).mean()
+
+            logits_b, _ = entropy_coder(id_b.detach(), condition=id_t.detach())
+            prior_loss += ent_loss(logits, id_b.detach()).reshape(img.shape[0], -1).sum(1).mean()
 
             prior_loss.backward()
             poptimizer.step()
@@ -190,21 +197,35 @@ def main(args):
             n_out_res_block=0,
         ).to(device)
 
+    entropy_coder_bottom = PixelSNAIL(
+        [64, 64],
+        512,
+        64,
+        5,
+        4,
+        4,
+        64,
+        n_out_res_block=0,
+        n_cond_res_block=2
+    ).to(device)
+
     if torch.cuda.device_count() > 1:
         logger.info(f'Number of gpu is {torch.cuda.device_count()}')
         entropy_coder = _CustomDataParallel(entropy_coder)
+        entropy_coder_bottom = _CustomDataParallel(entropy_coder_bottom)
         #PixelCNN(ncode=512, channels_in=1).to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
-    poptimizer = optim.Adam(entropy_coder.parameters(), lr=args.lr)
+    poptimizer = optim.Adam(list(entropy_coder.parameters()) + list(entropy_coder_bottom.parameters()),
+                            lr=args.lr)
     scheduler = None
 
 
     for i in range(args.epoch):
-        train(i, loader, model, optimizer, scheduler, device, entropy_coder, poptimizer)
+        train(i, loader, model, optimizer, scheduler, device, entropy_coder, entropy_coder_bottom, poptimizer)
 
         os.makedirs("/scratch/xgitiaux/checkpoint/vqvae", exist_ok=True)
-        torch.save(model.state_dict(), f"/scratch/xgitiaux/checkpoint/vqvae/vqvae_{str(i + 1).zfill(3)}.pt")
+        torch.save(model.state_dict(), f"/scratch/xgitiaux/checkpoint/vqvae/two_q_vqvae_{str(i + 1).zfill(3)}.pt")
 
         #eval(i, validation_loader, model, device)
 
