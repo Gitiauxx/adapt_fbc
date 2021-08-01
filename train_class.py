@@ -67,7 +67,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
         img = img.to(device)
         s = s.to(device)
 
-        out, latent_loss, id_t = model(img, s)
+        out, latent_loss, id_t, _ = model(img, s)
         id_t = id_t.reshape(img.shape[0], -1)
 
         logits = entropy_coder(id_t.detach().float())
@@ -124,13 +124,20 @@ def main(args):
     loader = DataLoader(dataset, batch_size=None, num_workers=16)
     #loader = DataLoader(dataset, batch_size=32, shuffle=True)
 
-    model = VQVAE(cout=30).to(device)
+    model = VQVAE(cout=30)
+
+    checkpoints = f"/scratch/xgitiaux/checkpoint/vqvae/two_q_vqvae_084.pt"
+
+    logger.info(f'Loading checkpoint {checkpoints}')
+    checkpoint = torch.load(checkpoints = f"/scratch/xgitiaux/checkpoint/vqvae/two_q_vqvae_084.pt", map_location='cpu')
+    model.load_state_dict(checkpoint['model_state_dict'])
+
+    model = model.to(device)
 
     if torch.cuda.device_count() > 1:
         logger.info(f'Number of gpu is {torch.cuda.device_count()}')
         model = _CustomDataParallel(model)
 
-    checkpoints = f"/scratch/xgitiaux/checkpoint/vqvae/vqvae_80.pt"
 
     entropy_coder = MLP(32 * 32, depth=3, width=256).to(device)
 
