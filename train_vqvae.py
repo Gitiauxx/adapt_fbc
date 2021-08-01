@@ -90,9 +90,9 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, ent
             id_t = id_t.reshape(img.shape[0], -1)
             logits = entropy_coder(id_t.detach().float())
 
-            s = s.argmax(-1)
+            spred = s.argmax(-1)
             logits = logits.squeeze(1)
-            prior_loss = ent_loss(logits, s.float())
+            prior_loss = ent_loss(logits, spred.float())
 
             loss = recon_loss + latent_loss_weight * latent_loss - beta * prior_loss
 
@@ -108,9 +108,9 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, ent
             id_t = id_t.reshape(img.shape[0], -1)
             logits = entropy_coder(id_t.detach().float())
 
-            s = s.argmax(-1)
+            spred = s.argmax(-1)
             logits = logits.squeeze(1)
-            prior_loss = ent_loss(logits, s.float())
+            prior_loss = ent_loss(logits, spred.float())
 
             prior_loss.backward()
             poptimizer.step()
@@ -129,7 +129,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, ent
 
         pred = (logits >=0).float()
         #logits.argmax(1)
-        acc_sum +=  (pred == s).float().sum()
+        acc_sum +=  (pred == s.argmax(1)).float().sum()
             #(pred == id_t).float().reshape(img.shape[0], -1).mean(1).sum()
 
         #if dist.is_primary():
