@@ -66,7 +66,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, ent
 
         model.zero_grad()
         entropy_coder.zero_grad()
-        entropy_coder_bottom.zero_grad()
+        #entropy_coder_bottom.zero_grad()
 
         # beta += 10**(-2) * i / len(loader)
         # beta = min(1.0, beta)
@@ -87,7 +87,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, ent
             # prior_loss += ent_loss(logits_b, id_b).reshape(img.shape[0], -1).sum(1).mean()
             #
             # loss = recon_loss + latent_loss_weight * latent_loss + beta * prior_loss
-
+            id_t = id_t.reshape(img.shape[0], -1)
             logits = entropy_coder(id_t.detach().float())
 
             s = s.argmax(-1)
@@ -105,7 +105,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, ent
             #
             # logits_b, _ = entropy_coder_bottom(id_b.detach(), condition=id_t.detach())
             # prior_loss += ent_loss(logits_b, id_b.detach()).reshape(img.shape[0], -1).sum(1).mean()
-
+            id_t = id_t.reshape(img.shape[0], -1)
             logits = entropy_coder(id_t.detach().float())
 
             s = s.argmax(-1)
