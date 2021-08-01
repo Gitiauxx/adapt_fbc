@@ -1,6 +1,7 @@
 import argparse
 import sys
 import os
+from collections import OrderedDict
 
 import torch
 import torchvision.utils as utils
@@ -130,7 +131,13 @@ def main(args):
 
     logger.info(f'Loading checkpoint {checkpoints}')
     checkpoint = torch.load(checkpoints, map_location='cpu')
-    model.load_state_dict(checkpoint['model_state_dict'])
+
+    new_state_dict = OrderedDict()
+    for k, v in checkpoint.items():
+        name = k[7:]  # remove `module.`
+        new_state_dict[name] = v
+
+    model.load_state_dict(new_state_dict)
 
     model = model.to(device)
 
