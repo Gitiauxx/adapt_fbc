@@ -127,8 +127,10 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, ent
         mse_sum += comm["mse_sum"]
         mse_n +=comm["mse_n"]
 
-        pred = logits.argmax(1)
-        acc_sum += (pred == id_t).float().reshape(img.shape[0], -1).mean(1).sum()
+        pred = (logits >=0).float()
+        #logits.argmax(1)
+        acc_sum +=  (pred == s).float().sum()
+            #(pred == id_t).float().reshape(img.shape[0], -1).mean(1).sum()
 
         #if dist.is_primary():
         lr = optimizer.param_groups[0]["lr"]
