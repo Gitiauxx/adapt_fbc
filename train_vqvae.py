@@ -54,7 +54,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, ent
     acc_sum = 0
 
     latent_loss_weight = 0.25 * 100000
-    beta = 1.0
+    beta = 10
 
     for i, data in enumerate(loader):
         img = data[0]
