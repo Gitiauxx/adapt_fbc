@@ -56,7 +56,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, ent
     acc_sum = 0
 
     latent_loss_weight = 0.25 * 100000
-    beta = 1.0
+    beta = 1000
 
     for i, data in enumerate(loader):
         img = data[0]
@@ -194,7 +194,7 @@ def main(args):
                .batched(16)
                )
 
-    loader = DataLoader(dataset, batch_size=None, num_workers=16)
+    loader = DataLoader(dataset, batch_size=None, num_workers=16, drop_last=True)
     #loader = DataLoader(dataset, batch_size=32, shuffle=True)
 
     model = VQVAE(cout=30).to(device)
