@@ -129,7 +129,7 @@ def main(args):
     checkpoints = f"/scratch/xgitiaux/checkpoint/vqvae/two_q_vqvae_084.pt"
 
     logger.info(f'Loading checkpoint {checkpoints}')
-    checkpoint = torch.load(checkpoints = f"/scratch/xgitiaux/checkpoint/vqvae/two_q_vqvae_084.pt", map_location='cpu')
+    checkpoint = torch.load(checkpoints, map_location='cpu')
     model.load_state_dict(checkpoint['model_state_dict'])
 
     model = model.to(device)
