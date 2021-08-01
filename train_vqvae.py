@@ -19,6 +19,7 @@ from source.losses.ce_loss import CECondLoss
 from source.losses.discmixlogistic_loss import DiscMixLogisticLoss
 from source.utils import get_logger
 import torchvision.transforms as tf
+from source.auditors.mlp import MLP
 
 import webdataset as wds
 
@@ -46,7 +47,8 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, ent
     loader = tqdm(loader)
 
     criterion = DiscMixLogisticLoss()
-    ent_loss = CECondLoss()
+    ent_loss = nn.BCEWithLogitsLoss() #CECondLoss()
+
     #nn.MSELoss()
 
     mse_sum = 0
@@ -54,7 +56,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, ent
     acc_sum = 0
 
     latent_loss_weight = 0.25 * 100000
-    beta = 10
+    beta = 1.0
 
     for i, data in enumerate(loader):
         img = data[0]
@@ -78,30 +80,43 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, ent
 
         if i % 2 == 0:
 
-            logits, _ = entropy_coder(id_t)
-            prior_loss = ent_loss(logits, id_t).reshape(img.shape[0], -1).sum(1).mean()
+            # logits, _ = entropy_coder(id_t)
+            # prior_loss = ent_loss(logits, id_t).reshape(img.shape[0], -1).sum(1).mean()
+            #
+            # logits_b, _ = entropy_coder_bottom(id_b, condition=id_t)
+            # prior_loss += ent_loss(logits_b, id_b).reshape(img.shape[0], -1).sum(1).mean()
+            #
+            # loss = recon_loss + latent_loss_weight * latent_loss + beta * prior_loss
 
-            logits_b, _ = entropy_coder_bottom(id_b, condition=id_t)
-            prior_loss += ent_loss(logits_b, id_b).reshape(img.shape[0], -1).sum(1).mean()
+            logits = entropy_coder(id_t.detach().float())
 
-            loss = recon_loss + latent_loss_weight * latent_loss + beta * prior_loss
+            s = s.argmax(-1)
+            logits = logits.squeeze(1)
+            prior_loss = criterion(logits, s.float())
+
+            loss = recon_loss + latent_loss_weight * latent_loss - beta * prior_loss
+
             loss.backward()
             optimizer.step()
 
         else:
-            logits, _ = entropy_coder(id_t.detach())
-            prior_loss = ent_loss(logits, id_t.detach()).reshape(img.shape[0], -1).sum(1).mean()
+            # logits, _ = entropy_coder(id_t.detach())
+            # prior_loss = ent_loss(logits, id_t.detach()).reshape(img.shape[0], -1).sum(1).mean()
+            #
+            # logits_b, _ = entropy_coder_bottom(id_b.detach(), condition=id_t.detach())
+            # prior_loss += ent_loss(logits_b, id_b.detach()).reshape(img.shape[0], -1).sum(1).mean()
 
-            logits_b, _ = entropy_coder_bottom(id_b.detach(), condition=id_t.detach())
-            prior_loss += ent_loss(logits_b, id_b.detach()).reshape(img.shape[0], -1).sum(1).mean()
+            logits = entropy_coder(id_t.detach().float())
+
+            s = s.argmax(-1)
+            logits = logits.squeeze(1)
+            prior_loss = criterion(logits, s.float())
 
             prior_loss.backward()
             poptimizer.step()
 
         if scheduler is not None:
             scheduler.step()
-
-
 
         part_mse_sum = recon_loss.item() * img.shape[0]
         part_mse_n = img.shape[0]
@@ -197,34 +212,36 @@ def main(args):
             n_out_res_block=0,
         ).to(device)
 
-    entropy_coder_bottom = PixelSNAIL(
-        [64, 64],
-        512,
-        64,
-        5,
-        2,
-        2,
-        64,
-        n_out_res_block=0,
-        n_cond_res_block=2,
-        cond_res_channel=64,
-        attention=False
-    ).to(device)
+    # entropy_coder_bottom = PixelSNAIL(
+    #     [64, 64],
+    #     512,
+    #     64,
+    #     5,
+    #     2,
+    #     2,
+    #     64,
+    #     n_out_res_block=0,
+    #     n_cond_res_block=2,
+    #     cond_res_channel=64,
+    #     attention=False
+    # ).to(device)
+
+    entropy_coder = MLP(32 * 32, depth=3, width=256).to(device)
 
     if torch.cuda.device_count() > 1:
         logger.info(f'Number of gpu is {torch.cuda.device_count()}')
         entropy_coder = _CustomDataParallel(entropy_coder)
-        entropy_coder_bottom = _CustomDataParallel(entropy_coder_bottom)
+        #entropy_coder_bottom = _CustomDataParallel(entropy_coder_bottom)
         #PixelCNN(ncode=512, channels_in=1).to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
-    poptimizer = optim.Adam(list(entropy_coder.parameters()) + list(entropy_coder_bottom.parameters()),
+    poptimizer = optim.Adam(list(entropy_coder.parameters()), #+ list(entropy_coder_bottom.parameters()),
                             lr=args.lr)
     scheduler = None
 
 
     for i in range(args.epoch):
-        train(i, loader, model, optimizer, scheduler, device, entropy_coder, entropy_coder_bottom, poptimizer)
+        train(i, loader, model, optimizer, scheduler, device, entropy_coder, entropy_coder, poptimizer)
 
         os.makedirs("/scratch/xgitiaux/checkpoint/vqvae", exist_ok=True)
         torch.save(model.state_dict(), f"/scratch/xgitiaux/checkpoint/vqvae/two_q_vqvae_{str(i + 1).zfill(3)}.pt")
