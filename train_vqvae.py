@@ -92,7 +92,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, ent
 
             s = s.argmax(-1)
             logits = logits.squeeze(1)
-            prior_loss = criterion(logits, s.float())
+            prior_loss = ent_loss(logits, s.float())
 
             loss = recon_loss + latent_loss_weight * latent_loss - beta * prior_loss
 
@@ -110,7 +110,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, ent
 
             s = s.argmax(-1)
             logits = logits.squeeze(1)
-            prior_loss = criterion(logits, s.float())
+            prior_loss = ent_loss(logits, s.float())
 
             prior_loss.backward()
             poptimizer.step()
