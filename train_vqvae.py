@@ -193,8 +193,8 @@ def main(args):
                .map_tuple(preproc, identity)
                .batched(16)
                )
-
-    dataset = CelebA()
+    url = '../data_vae'
+    dataset = CelebA(url)
 
     loader = DataLoader(dataset, batch_size=64, num_workers=16, drop_last=True)
     #loader = DataLoader(dataset, batch_size=32, shuffle=True)
