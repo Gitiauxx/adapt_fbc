@@ -127,7 +127,7 @@ def main(args):
 
     model = VQVAE(cout=30)
 
-    checkpoints = f"/scratch/xgitiaux/checkpoint/vqvae/two_q_vqvae_084.pt"
+    checkpoints = f"/scratch/xgitiaux/checkpoint/vqvae/two_q_vqvae_060.pt"
 
     logger.info(f'Loading checkpoint {checkpoints}')
     checkpoint = torch.load(checkpoints, map_location='cpu')
