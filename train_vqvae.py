@@ -59,8 +59,8 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, ent
     beta = 1000
 
     for i, data in enumerate(loader):
-        img = data[0]
-        s = data[1]
+        img = data['input']
+        s = data['sensitive']
         # img = data['input']
         # s = data['sensitive']
 
