@@ -88,7 +88,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, ent
             #
             # loss = recon_loss + latent_loss_weight * latent_loss + beta * prior_loss
             id_t = id_t.reshape(img.shape[0], -1)
-            logits = entropy_coder(id_t.detach().float())
+            logits = entropy_coder(id_t.float())
 
             spred = s.argmax(-1)
             logits = logits.squeeze(1)
