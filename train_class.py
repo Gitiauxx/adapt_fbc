@@ -77,8 +77,6 @@ def train(epoch, loader, model, optimizer, scheduler, device, entropy_coder, pop
         logits = logits.squeeze(1)
         prior_loss = criterion(logits, s.float())
 
-        logger.info(s.float().mean())
-
         prior_loss.backward()
         poptimizer.step()
 
@@ -129,7 +127,7 @@ def main(args):
 
     model = VQVAE(cout=30)
 
-    checkpoints = f"/scratch/xgitiaux/checkpoint/vqvae/two_q_vqvae_007.pt"
+    checkpoints = f"/scratch/xgitiaux/checkpoint/vqvae/two_q_vqvae_017.pt"
 
     logger.info(f'Loading checkpoint {checkpoints}')
     checkpoint = torch.load(checkpoints, map_location='cpu')
