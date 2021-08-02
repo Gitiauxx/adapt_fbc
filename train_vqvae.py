@@ -194,7 +194,9 @@ def main(args):
                .batched(16)
                )
 
-    loader = DataLoader(dataset, batch_size=None, num_workers=16, drop_last=True)
+    dataset = CelebA()
+
+    loader = DataLoader(dataset, batch_size=64, num_workers=16, drop_last=True)
     #loader = DataLoader(dataset, batch_size=32, shuffle=True)
 
     model = VQVAE(cout=30).to(device)
